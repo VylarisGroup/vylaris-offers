@@ -1,0 +1,6 @@
+# Kein Zugriff aus dem Web – Anwendungscode und Konfiguration
+Require all denied
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>

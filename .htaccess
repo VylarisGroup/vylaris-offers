@@ -1,0 +1,54 @@
+# ============================================================================
+#  Apache-Konfiguration (Plesk / Shared Hosting)
+# ============================================================================
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+AddDefaultCharset UTF-8
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Optional: HTTPS erzwingen (nach Einrichtung des SSL-Zertifikats aktivieren,
+    # oder in Plesk unter „Hosting & DNS → Hosting“ „Permanente SEO-sichere 301-Weiterleitung von HTTP zu HTTPS“ wählen)
+    # RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Interne Verzeichnisse niemals ausliefern
+    RewriteRule ^(app|storage)(/|$) - [F,L]
+
+    # Versteckte Dateien sperren (ausser .well-known für Let's Encrypt)
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+    # Schöne URLs: alles, was keine echte Datei ist, an index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Sensible Dateitypen sperren
+<FilesMatch "\.(sql|log|lock|md|ini|sh|bak|dist|tmp|eml)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    <FilesMatch "\.(css|js|woff2?|svg|png|jpe?g|webp|ico)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# PHP-Einstellungen (wirken nur bei Apache-Modul; bei PHP-FPM in Plesk unter „PHP-Einstellungen“ setzen)
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag session.cookie_httponly On
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+</IfModule>
