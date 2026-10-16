@@ -1,0 +1,13 @@
+# Laufzeitdaten und Zugangsdaten – nie ins Repository
+/app/config.php
+/install.lock
+/storage/install.lock
+/storage/logs/*
+/storage/mail/*
+/storage/uploads/*
+/storage/update/
+/storage/rate*
+!/storage/logs/.gitkeep
+!/storage/mail/.gitkeep
+!/storage/uploads/files/.gitkeep
+!/storage/uploads/signatures/.gitkeep

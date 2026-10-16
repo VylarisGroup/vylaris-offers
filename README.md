@@ -504,6 +504,7 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 ```
 ├── index.php              Front-Controller und Routen
 ├── cron.php               Cronjob (nur CLI): Lizenzprüfung, Updates, Abos, abgelaufene Offerten
+├── style.md               Styleguide: Design, Bibliotheken, Designentscheide
 ├── tests/run.php          Regressionstests für Steuer- und Rechenlogik (php tests/run.php)
 ├── setup.php              Installationsassistent (nach Installation löschen)
 ├── .htaccess              Schöne URLs, Zugriffsschutz, Header
