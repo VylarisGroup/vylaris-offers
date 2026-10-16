@@ -2,6 +2,15 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 1.6.0 – 2026-10-16
+
+### Neu
+- **Assistent (Schritt für Schritt):** Kunde, Offerte, Benutzer, Produktbereich, Positionsvorlage, Steuervorlage und Versandart lassen sich jetzt auch Schritt für Schritt erfassen – mit Fortschrittsanzeige, Prüfung pro Schritt und Zusammenfassung vor dem Speichern. Oben im Formular zwischen **Formular** und **Assistent** umschalten; das bisherige Formular bleibt unverändert verfügbar.
+- **Schnellzugriff:** Neben «Neue Offerte» öffnet der Pfeil ein Menü mit den Assistenten für Offerte und Kunde.
+
+### Verbessert
+- **Seitenleiste mit ausklappbaren Gruppen** (Verkauf, Kunden, Katalog, Verwaltung, System). Die Gruppe der aktuellen Seite ist immer offen, die Auswahl wird pro Browser gemerkt, zugeklappte Gruppen zeigen offene Hinweise als Zähler.
+
 ## 1.5.1 – 2026-10-16
 
 ### Neu

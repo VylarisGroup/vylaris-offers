@@ -77,6 +77,20 @@ $favicon = Brand::faviconUrl();
   .nav-link i { @apply text-xl text-slate-400 transition-colors duration-150; }
   .nav-link:hover i { @apply text-slate-600; }
   .nav-link.is-active { @apply bg-brand-50 text-brand-700; }
+  .nav-group-btn { @apply flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition duration-150 hover:bg-slate-100 hover:text-slate-900 cursor-pointer; }
+  .nav-group-btn > i:first-child { @apply text-xl text-slate-400; }
+  .nav-chevron { @apply text-lg text-slate-400 transition-transform duration-200; }
+  .nav-group[data-open] .nav-chevron { @apply rotate-180; }
+  .nav-group[data-open] .nav-group-badge { @apply hidden; }
+  .nav-group[data-has-active="1"] > .nav-group-btn { @apply text-brand-700; }
+  .nav-group-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .22s cubic-bezier(.2,.8,.2,1); }
+  .nav-group[data-open] > .nav-group-body { grid-template-rows: 1fr; }
+  .nav-group:not([data-open]) .nav-group-body a { visibility: hidden; transition: visibility 0s linear .22s; }
+  [data-nav].no-anim *, [data-nav].no-anim *::after { transition: none !important; }
+  .nav-sub { @apply ml-5 border-l border-slate-200 pl-2; }
+  .nav-link-sub { @apply py-1.5; }
+  .nav-link-sub i { @apply text-lg; }
+  @media (prefers-reduced-motion: reduce) { .nav-group-body { transition: none; } .nav-chevron { transition: none; } }
   .nav-link.is-active i { @apply text-brand-600; }
   .tab { @apply inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:text-slate-900 hover:bg-white/70; }
   .tab.is-active { @apply bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80; }

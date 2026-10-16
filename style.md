@@ -1,6 +1,6 @@
 # VylarisOffers – Styleguide & Designentscheide
 
-Dieses Dokument beschreibt, **wie die Oberfläche gestaltet ist**, **welche Bibliotheken** dafür verwendet werden und **warum** wichtige Entscheidungen so getroffen wurden. Es richtet sich an alle, die das System weiterentwickeln oder das Erscheinungsbild anpassen. Stand: Version 1.5.1.
+Dieses Dokument beschreibt, **wie die Oberfläche gestaltet ist**, **welche Bibliotheken** dafür verwendet werden und **warum** wichtige Entscheidungen so getroffen wurden. Es richtet sich an alle, die das System weiterentwickeln oder das Erscheinungsbild anpassen. Stand: Version 1.6.0.
 
 > Hinweis: `.md`-Dateien werden vom Webserver nicht ausgeliefert (`.htaccess`). Das Dokument ist nur für Entwickler im Dateisystem bzw. im Repository gedacht.
 
@@ -487,3 +487,9 @@ Gestaltungsregeln:
 ## Anhang: Änderungsprotokoll-Fenster
 
 Das Fenster «Neuigkeiten in Version X» (`partials/changelog-modal.php`) nutzt das normale Modal-System (`appModal`), öffnet sich 350 ms nach dem Laden und markiert die Version sofort per `fetch` als gesehen (einmal pro Version). Einträge werden von `partials/changelog-entries.php` gerendert: pro Abschnitt ein Icon mit Farbton (Neu = grün, Verbessert = blau, Behoben = gelb, Hinweis = rot). Text wird escaped; nur `**fett**` und `` `code` `` sind erlaubt.
+
+## Anhang: Seitenleiste und Assistent (ab 1.6.0)
+
+**Ausklappbare Navigation.** Gruppen sind `.nav-group` mit Kopfzeile `.nav-group-btn` und Inhalt `.nav-group-body` (Auf-/Zuklappen per `grid-template-rows: 0fr → 1fr`, 220 ms, bei reduzierter Bewegung ohne Animation). Unterpunkte sind eingerückt (`.nav-sub`, linke Linie) und etwas kompakter (`.nav-link-sub`). Zustand: `aria-expanded`, Merkung pro Gruppe in `localStorage` (`nav:<gruppe>`); die Gruppe mit der aktiven Seite ist immer offen. Zugeklappte Gruppen fassen die Zähler ihrer Einträge als Badge zusammen. Beim Laden läuft keine Animation (`.no-anim`).
+
+**Assistent (`wizard.js`).** Progressive Enhancement: Das Formular bleibt das ursprüngliche; der Assistent blendet nur Teile ein (`.wz-off`). Bedienelemente: Umschalter `.wz-switch` (Segment-Control), Schrittanzeige `.wz-steps` mit Punkten (aktuell = Markenfarbe mit Ring, erledigt = Haken), dünne Fortschrittslinie, Navigation `.wz-nav` (Zurück/Weiter). Auf kleinen Bildschirmen zeigt nur der aktuelle Schritt seine Bezeichnung. Im Assistenten ist das Formular einspaltig (max. 46 rem). Schritte werden über `data-step` (eigene Gruppen) oder `data-wizard="auto"` (jede Eingabe ein Schritt, Kontrollkästchen gebündelt) definiert; leere Schritte (z. B. «Versand» bei digitalen Produkten) werden übersprungen.

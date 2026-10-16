@@ -97,6 +97,38 @@
     form.dispatchEvent(new Event('modal:filled'));
   };
 
+  /* ------------------------------------------------ Ausklappbare Seitenleiste */
+  const navStore = {
+    get(k) { try { return localStorage.getItem('nav:' + k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem('nav:' + k, v); } catch (e) { /* ohne Speicher weiter */ } },
+  };
+  function setNavGroup(g, open) {
+    g.toggleAttribute('data-open', open);
+    const b = $('.nav-group-btn', g);
+    if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function toggleNavGroup(g) {
+    const open = !g.hasAttribute('data-open');
+    setNavGroup(g, open);
+    navStore.set(g.dataset.navGroup, open ? '1' : '0');
+  }
+  const initNav = () => {
+    const nav = $('[data-nav]');
+    if (!nav) return;
+    nav.classList.add('no-anim');
+    $$('.nav-group', nav).forEach((g) => {
+      // Gruppe mit der aktuellen Seite bleibt immer offen; sonst gilt die gemerkte Wahl bzw. der Standard.
+      if (g.dataset.hasActive === '1') return setNavGroup(g, true);
+      const saved = navStore.get(g.dataset.navGroup);
+      setNavGroup(g, saved === null ? g.dataset.default === '1' : saved === '1');
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => nav.classList.remove('no-anim')));
+    // Aktiver Eintrag sichtbar halten (lange Navigation)
+    const act = $('.nav-link.is-active', nav);
+    if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest' });
+  };
+  initNav();
+
   /* ------------------------------------------------ Bestätigungsdialog */
   const confirmModal = () => $('#confirm-modal');
   const askConfirm = (text, okLabel, variant) => new Promise((resolve) => {
@@ -175,6 +207,9 @@
       ddToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
       return;
     }
+
+    const grpBtn = t.closest('.nav-group-btn');
+    if (grpBtn) { ev.preventDefault(); toggleNavGroup(grpBtn.closest('.nav-group')); return; }
 
     if (t.closest('[data-sidebar-open]')) return document.body.classList.add('sidebar-open');
     if (t.closest('[data-sidebar-close]')) return document.body.classList.remove('sidebar-open');

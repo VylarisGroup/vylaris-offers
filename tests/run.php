@@ -272,6 +272,17 @@ $eq('Changelog: HTML maskiert', str_contains(Changelog::inline('<script>x</scrip
 $eq('Changelog: fett', str_contains(Changelog::inline('**f**'), '<strong'), true);
 $eq('Changelog: echte Datei lesbar', count(Changelog::all()) >= 1, true);
 $eq('Changelog: aktuelle Version enthalten', in_array(APP_VERSION, array_column(Changelog::all(), 'version'), true), true);
+// Assistent / Seitenleiste (ab 1.6.0)
+$wzJs = (string) @file_get_contents(APP_ROOT . '/assets/js/wizard.js');
+$eq('Assistent-Skript vorhanden', str_contains($wzJs, 'data-wizard') && str_contains($wzJs, 'wizard:validate'), true);
+foreach (['customers/form', 'offers/form'] as $v) {
+    $src = (string) file_get_contents(APP_DIR . '/views/admin/' . $v . '.php');
+    $eq("Assistent-Schritte in $v", str_contains($src, 'data-wizard') && substr_count($src, 'data-step=') >= 4, true);
+}
+foreach (['users/index', 'catalog/areas', 'catalog/templates', 'catalog/taxes', 'catalog/shipping'] as $v) {
+    $eq("Dialog-Assistent in $v", str_contains((string) file_get_contents(APP_DIR . '/views/admin/' . $v . '.php'), 'data-wizard="auto"'), true);
+}
+$eq('Seitenleiste mit Gruppen', str_contains((string) file_get_contents(APP_DIR . '/views/layouts/admin.php'), 'data-nav-group'), true);
 
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

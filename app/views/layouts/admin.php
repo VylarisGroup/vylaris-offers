@@ -8,37 +8,57 @@ $active = static function (string $prefix, bool $exact = false) use ($path): str
 $newOrders = (int) DB::val("SELECT COUNT(*) FROM orders WHERE status = 'new'");
 $newInq = InquiryService::newCount();
 $openInv = (int) DB::val("SELECT COUNT(*) FROM invoices WHERE status = 'sent' AND due_date < CURDATE()");
-$nav = [
-    ['admin', 'Dashboard', 'bx-grid-alt', true, null],
-    ['admin/offers', 'Offerten', 'bx-file', false, null],
-    ['admin/inquiries', 'Anfragen', 'bx-envelope-open', false, $newInq ?: null],
-    ['admin/orders', 'Aufträge', 'bx-package', false, $newOrders ?: null],
-    ['admin/invoices', 'Rechnungen', 'bx-receipt', false, $openInv ?: null],
-    ['admin/subscriptions', 'Abos', 'bx-sync', false, null],
-    ['admin/customers', 'Kunden', 'bx-group', false, null],
-];
 $lic = License::status();
-$nav = array_values(array_filter($nav, static fn ($n) => match ($n[0]) {
-    'admin/invoices' => License::has('invoices'), 'admin/subscriptions' => License::has('subscriptions'), 'admin/inquiries' => License::has('website'), default => true,
-}));
-$catalog = [
-    ['admin/areas', 'Produktbereiche', 'bx-category'],
-    ['admin/templates', 'Positionsvorlagen', 'bx-bookmarks'],
-    ['admin/taxes', 'Steuervorlagen', 'bx-receipt'],
-    ['admin/shipping', 'Versandarten', 'bx-car'],
+$isAdmin = $me && $me['role'] === 'admin';
+$tips = ['admin/orders' => 'Neue Aufträge', 'admin/invoices' => 'Überfällige Rechnungen', 'admin/inquiries' => 'Neue Anfragen'];
+// Einträge: [Pfad, Label, Icon, Zähler|null, Zählerfarbe]
+$groups = [
+    ['sales', 'Verkauf', 'bx-store-alt', true, [
+        ['admin/offers', 'Offerten', 'bx-file', null],
+        ['admin/orders', 'Aufträge', 'bx-package', $newOrders ?: null],
+        ['admin/invoices', 'Rechnungen', 'bx-receipt', $openInv ?: null],
+        ['admin/subscriptions', 'Abos', 'bx-sync', null],
+    ]],
+    ['crm', 'Kunden', 'bx-group', true, [
+        ['admin/inquiries', 'Anfragen', 'bx-envelope-open', $newInq ?: null],
+        ['admin/customers', 'Kunden', 'bx-user-pin', null],
+    ]],
+    ['catalog', 'Katalog', 'bx-category', false, [
+        ['admin/areas', 'Produktbereiche', 'bx-category', null],
+        ['admin/templates', 'Positionsvorlagen', 'bx-bookmarks', null],
+        ['admin/taxes', 'Steuervorlagen', 'bx-receipt', null],
+        ['admin/shipping', 'Versandarten', 'bx-car', null],
+    ]],
 ];
-$system = [];
-if ($me && $me['role'] === 'admin') {
+if ($isAdmin) {
     // Heikle Bereiche (Benutzer, Einstellungen, Steuern, Mail-Protokoll) sind Administratoren vorbehalten.
-    $catalog[2] = ['admin/taxes', 'Steuervorlagen', 'bx-receipt'];
-    $system = [['admin/reports', 'Berichte', 'bx-bar-chart-alt-2'], ['admin/users', 'Benutzer', 'bx-user-check'], ['admin/website', 'Webseite', 'bx-layout'], ['admin/settings', 'Einstellungen', 'bx-cog'], ['admin/update', 'Update', 'bx-cloud-download', false, UpdateService::badge()], ['admin/license', 'Lizenz', 'bx-key', false, $lic['mode'] === 'readonly' ? '!' : null], ['admin/mail-log', 'E-Mail-Protokoll', 'bx-envelope'], ['admin/audit', 'Audit-Log', 'bx-shield-quarter'], ['admin/integrations', 'Integrationen', 'bx-plug'], ['admin/health', 'Systemstatus', 'bx-pulse', false, HealthService::badge() ?: null]];
-    $system = array_values(array_filter($system, static fn ($n) => match ($n[0]) {
-        'admin/reports' => License::has('reports'), 'admin/website' => License::has('website'),
-        'admin/integrations' => License::has('api') || License::has('webhooks') || License::has('reports'), default => true,
-    }));
+    $groups[] = ['manage', 'Verwaltung', 'bx-briefcase-alt-2', false, [
+        ['admin/reports', 'Berichte', 'bx-bar-chart-alt-2', null],
+        ['admin/users', 'Benutzer', 'bx-user-check', null],
+        ['admin/website', 'Webseite', 'bx-layout', null],
+        ['admin/integrations', 'Integrationen', 'bx-plug', null],
+    ]];
+    $groups[] = ['system', 'System', 'bx-cog', false, [
+        ['admin/settings', 'Einstellungen', 'bx-slider-alt', null],
+        ['admin/update', 'Update', 'bx-cloud-download', UpdateService::badge() ?: null],
+        ['admin/license', 'Lizenz', 'bx-key', $lic['mode'] === 'readonly' ? '!' : null],
+        ['admin/health', 'Systemstatus', 'bx-pulse', HealthService::badge() ?: null],
+        ['admin/mail-log', 'E-Mail-Protokoll', 'bx-envelope', null],
+        ['admin/audit', 'Audit-Log', 'bx-shield-quarter', null],
+    ]];
 } else {
-    unset($catalog[2]);
+    $groups[2][4] = array_values(array_filter($groups[2][4], static fn ($n) => $n[0] !== 'admin/taxes'));
 }
+$hidden = static fn (string $href): bool => match ($href) {
+    'admin/invoices' => !License::has('invoices'), 'admin/subscriptions' => !License::has('subscriptions'), 'admin/inquiries' => !License::has('website'),
+    'admin/reports' => !License::has('reports'), 'admin/website' => !License::has('website'),
+    'admin/integrations' => !(License::has('api') || License::has('webhooks') || License::has('reports')), default => false,
+};
+foreach ($groups as &$g) {
+    $g[4] = array_values(array_filter($g[4], static fn ($n) => !$hidden($n[0])));
+}
+unset($g);
+$groups = array_values(array_filter($groups, static fn ($g) => $g[4] !== []));
 $siteName = Brand::name();
 $brandLogo = Brand::logoUrl();
 ?><!doctype html>
@@ -63,28 +83,41 @@ $brandLogo = Brand::logoUrl();
     </div>
     <button type="button" class="btn btn-ghost btn-icon ml-auto lg:hidden" data-sidebar-close aria-label="Menü schliessen"><i class="bx bx-x text-2xl"></i></button>
   </div>
-  <div class="px-4 pb-2">
-    <a href="<?= e(url('admin/offers/new')) ?>" class="btn btn-primary w-full"><i class="bx bx-plus"></i>Neue Offerte</a>
+  <div class="relative flex gap-1.5 px-4 pb-2" data-dropdown>
+    <a href="<?= e(url('admin/offers/new')) ?>" class="btn btn-primary min-w-0 flex-1"><i class="bx bx-plus"></i>Neue Offerte</a>
+    <button type="button" class="btn btn-primary btn-icon shrink-0" data-dropdown-toggle aria-haspopup="true" aria-expanded="false" aria-label="Weitere Aktionen zum Erstellen" data-tip="Neu erstellen"><i class="bx bx-chevron-down text-xl"></i></button>
+    <div class="dropdown-menu left-4 right-4 top-full mt-1" role="menu">
+      <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Mit Assistent</p>
+      <a href="<?= e(url('admin/offers/new?wizard=1')) ?>" class="dropdown-item" role="menuitem"><i class="bx bx-magic-wand"></i>Offerte – Schritt für Schritt</a>
+      <a href="<?= e(url('admin/customers/new?wizard=1')) ?>" class="dropdown-item" role="menuitem"><i class="bx bx-magic-wand"></i>Kunde – Schritt für Schritt</a>
+      <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Direkt</p>
+      <a href="<?= e(url('admin/customers/new')) ?>" class="dropdown-item" role="menuitem"><i class="bx bx-user-plus"></i>Neuer Kunde</a>
+    </div>
   </div>
-  <nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Hauptnavigation">
+  <nav class="flex-1 overflow-y-auto px-3 pb-4" aria-label="Hauptnavigation" data-nav>
     <div class="space-y-0.5 pt-2">
-      <?php foreach ($nav as [$href, $label, $icon, $exact, $count]): ?>
-        <a href="<?= e(url($href)) ?>" class="nav-link<?= $active('/' . $href, $exact) ?>"><i class="bx <?= $icon ?>"></i><span class="flex-1"><?= e($label) ?></span>
-          <?php if ($count): ?><span class="rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white" data-tip="<?= e(['admin/orders' => 'Neue Aufträge', 'admin/invoices' => 'Überfällige Rechnungen', 'admin/inquiries' => 'Neue Anfragen'][$href] ?? '') ?>"><?= $count ?></span><?php endif; ?>
-        </a>
-      <?php endforeach; ?>
+      <a href="<?= e(url('admin')) ?>" class="nav-link<?= $active('/admin', true) ?>"><i class="bx bx-grid-alt"></i><span class="flex-1">Dashboard</span></a>
     </div>
-    <p class="section-label">Katalog</p>
-    <div class="space-y-0.5">
-      <?php foreach ($catalog as [$href, $label, $icon]): ?>
-        <a href="<?= e(url($href)) ?>" class="nav-link<?= $active('/' . $href) ?>"><i class="bx <?= $icon ?>"></i><?= e($label) ?></a>
-      <?php endforeach; ?>
-    </div>
-    <p class="section-label">System</p>
-    <div class="space-y-0.5">
-      <?php foreach ($system as $sysItem): [$href, $label, $icon] = $sysItem; $count = $sysItem[4] ?? null; ?>
-        <a href="<?= e(url($href)) ?>" class="nav-link<?= $active('/' . $href) ?>"><i class="bx <?= $icon ?>"></i><span class="flex-1"><?= e($label) ?></span><?php if (!empty($count)): ?><span class="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white" data-tip="Offene Hinweise"><?= (int) $count ?></span><?php endif; ?></a>
-      <?php endforeach; ?>
+    <?php foreach ($groups as [$gk, $gLabel, $gIcon, $gOpen, $gItems]):
+      $hasActive = false; $sum = 0;
+      foreach ($gItems as $it) { if ($active('/' . $it[0]) !== '') { $hasActive = true; } $sum += is_numeric($it[3] ?? null) ? (int) $it[3] : (($it[3] ?? null) ? 1 : 0); }
+      $open = $hasActive || $gOpen; ?>
+      <div class="nav-group mt-1" data-nav-group="<?= e($gk) ?>" data-default="<?= $gOpen ? '1' : '0' ?>" data-has-active="<?= $hasActive ? '1' : '0' ?>"<?= $open ? ' data-open' : '' ?>>
+        <button type="button" class="nav-group-btn" aria-expanded="<?= $open ? 'true' : 'false' ?>" aria-controls="nav-<?= e($gk) ?>">
+          <i class="bx <?= $gIcon ?>"></i><span class="flex-1 text-left"><?= e($gLabel) ?></span>
+          <?php if ($sum): ?><span class="nav-group-badge rounded-full bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold text-white" data-tip="Offene Hinweise"><?= $sum ?></span><?php endif; ?>
+          <i class="bx bx-chevron-down nav-chevron"></i>
+        </button>
+        <div class="nav-group-body" id="nav-<?= e($gk) ?>"><div class="min-h-0 overflow-hidden"><div class="nav-sub space-y-0.5 pb-1 pt-0.5">
+          <?php foreach ($gItems as $it): [$href, $label, $icon] = $it; $count = $it[3] ?? null; ?>
+            <a href="<?= e(url($href)) ?>" class="nav-link nav-link-sub<?= $active('/' . $href) ?>"<?= $active('/' . $href) ? ' aria-current="page"' : '' ?>><i class="bx <?= $icon ?>"></i><span class="flex-1"><?= e($label) ?></span>
+              <?php if (!empty($count)): ?><span class="rounded-full <?= in_array($href, ['admin/orders', 'admin/invoices', 'admin/inquiries'], true) ? 'bg-brand-600' : 'bg-amber-500' ?> px-2 py-0.5 text-[11px] font-semibold text-white" data-tip="<?= e($tips[$href] ?? 'Offene Hinweise') ?>"><?= e((string) $count) ?></span><?php endif; ?>
+            </a>
+          <?php endforeach; ?>
+        </div></div></div>
+      </div>
+    <?php endforeach; ?>
+    <div class="mt-3 border-t border-slate-100 pt-3">
       <a href="<?= e(url('portal')) ?>" target="_blank" rel="noopener" class="nav-link"><i class="bx bx-link-external"></i>Kundenportal</a>
     </div>
   </nav>
@@ -133,5 +166,6 @@ $brandLogo = Brand::logoUrl();
 <?php if (empty($noChangelog)) include APP_DIR . '/views/partials/changelog-modal.php'; ?>
 <script src="<?= e(asset('js/app.js')) ?>" defer></script>
 <?php if (!empty($scripts)) foreach ((array) $scripts as $s): ?><script src="<?= e(asset($s)) ?>" defer></script><?php endforeach; ?>
+<script src="<?= e(asset('js/wizard.js')) ?>" defer></script>
 </body>
 </html>

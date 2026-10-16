@@ -39,10 +39,10 @@ include APP_DIR . '/views/partials/page-header.php';
 
 <div class="modal" id="modal-area" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal-backdrop" data-modal-close></div>
-  <form method="post" action="<?= e(url('admin/areas')) ?>" class="modal-panel max-w-lg" data-defaults='{"type":"digital","icon":"bx-category","active":1,"sort":0}'><?= csrf_field() ?>
+  <form method="post" action="<?= e(url('admin/areas')) ?>" class="modal-panel max-w-lg" data-wizard="auto" data-defaults='{"type":"digital","icon":"bx-category","active":1,"sort":0}'><?= csrf_field() ?>
     <input type="hidden" name="id">
     <div class="flex items-center justify-between border-b border-slate-100 p-5 sm:px-6"><h3 class="text-base font-semibold text-slate-900" data-modal-heading>Produktbereich</h3><button type="button" class="btn btn-ghost btn-icon" data-modal-close aria-label="Schliessen"><i class="bx bx-x text-2xl"></i></button></div>
-    <div class="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+    <div class="grid gap-4 p-5 sm:grid-cols-2 sm:p-6" data-wizard-fields>
       <div class="sm:col-span-2"><label class="label">Name <span class="text-rose-500">*</span></label><input class="input" name="name" required maxlength="120"></div>
       <div class="sm:col-span-2"><span class="label">Kategorie</span>
         <div class="grid grid-cols-2 gap-2">
@@ -57,6 +57,6 @@ include APP_DIR . '/views/partials/page-header.php';
       <div><label class="label">Sortierung</label><input class="input" type="number" name="sort"></div>
       <label class="flex cursor-pointer items-center gap-2 text-sm text-slate-700 sm:col-span-2"><input type="checkbox" class="checkbox" name="active" value="1">Aktiv (in neuen Offerten wählbar)</label>
     </div>
-    <div class="flex flex-col-reverse gap-2 rounded-b-2xl bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end"><button type="button" class="btn btn-secondary" data-modal-close>Abbrechen</button><button class="btn btn-primary"><i class="bx bx-save"></i>Speichern</button></div>
+    <div class="flex flex-col-reverse gap-2 rounded-b-2xl bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end" data-wizard-final><button type="button" class="btn btn-secondary" data-modal-close>Abbrechen</button><button class="btn btn-primary"><i class="bx bx-save"></i>Speichern</button></div>
   </form>
 </div>

@@ -1,6 +1,6 @@
 # VylarisOffers – Offerten- & Auftragsmanagement
 
-**Version 1.5.1** – Neu in 1.5.x: Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
+**Version 1.6.0** – Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
 
 PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand – **ausgelegt auf die Schweiz** (MWST, QR-Rechnung, CHF). Ohne Framework, ohne Composer, ohne Build-Schritt – läuft auf jedem Shared Hosting mit Plesk.
 
@@ -626,3 +626,9 @@ Das Token wird nur an GitHub gesendet, nie an Weiterleitungsziele.
 Nach einem Update erscheint beim ersten Aufruf des Admin-Bereichs ein Fenster «Neuigkeiten in Version X» (pro Benutzer einmal; Feld `users.changelog_seen`). Die Historie ist jederzeit unter `/admin/changelog` erreichbar (Link bei der Versionsnummer unten in der Navigation). Neu installierte Systeme und neu angelegte Benutzer sehen kein Fenster.
 
 Quelle ist `CHANGELOG.md` im Hauptordner: pro Version ein Abschnitt `## <Version> – <Datum>` mit `### Neu`, `### Verbessert`, `### Behoben` oder `### Hinweis` und Aufzählungspunkten (`**fett**`, `` `Code` ``). **Bei jedem Release muss `APP_VERSION` (in `app/bootstrap.php` und `setup.php`) erhöht und ein Eintrag oben in `CHANGELOG.md` ergänzt werden** – ein Test prüft, dass die aktuelle Version im Protokoll steht.
+
+## 15. Seitenleiste und Assistenten
+
+**Seitenleiste.** Die Navigation ist in ausklappbare Gruppen gegliedert: *Verkauf* (Offerten, Aufträge, Rechnungen, Abos), *Kunden* (Anfragen, Kunden), *Katalog*, *Verwaltung* (Berichte, Benutzer, Webseite, Integrationen; nur Administratoren) und *System* (Einstellungen, Update, Lizenz, Systemstatus, E-Mail-Protokoll, Audit-Log; nur Administratoren). Die Gruppe der aktuellen Seite ist immer offen; sonst gilt die zuletzt gewählte Einstellung (pro Browser gemerkt, `localStorage`), standardmässig sind *Verkauf* und *Kunden* offen. Zugeklappte Gruppen zeigen offene Hinweise (neue Aufträge, überfällige Rechnungen …) als Zähler. Neben «Neue Offerte» öffnet der Pfeil ein Schnellmenü.
+
+**Assistenten.** Formulare für Kunde, Offerte, Benutzer, Produktbereich, Positionsvorlage, Steuervorlage und Versandart haben oben einen Umschalter **Formular | Assistent**. Der Assistent führt Schritt für Schritt durch dieselben Felder (Fortschrittsanzeige, Prüfung der Pflichtfelder pro Schritt, bei Offerten zusätzlich «mindestens eine Position», Zusammenfassung zum Schluss). Das normale Formular bleibt der Standard und unverändert nutzbar; der Assistent sendet an dieselbe Adresse. Direktlinks: `…/admin/offers/new?wizard=1`, `…/admin/customers/new?wizard=1`. Bei Fehlern springt der Assistent zum betroffenen Schritt. Technisch: `assets/js/wizard.js` – Formulare werden mit `data-wizard` (eigene Schritte via `data-step`) oder `data-wizard="auto"` (eine Frage pro Schritt) markiert; Details im Kopf der Datei und in `style.md`.

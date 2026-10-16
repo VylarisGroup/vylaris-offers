@@ -33,7 +33,7 @@ $editorConfig = [
   </div>
 <?php endif; ?>
 
-<form method="post" action="<?= e(url('admin/offers')) ?>" id="offer-form" class="grid gap-6 xl:grid-cols-3" data-editor="<?= json_attr($editorConfig) ?>" novalidate>
+<form method="post" action="<?= e(url('admin/offers')) ?>" id="offer-form" class="grid gap-6 xl:grid-cols-3" data-wizard<?= ($_POST['_wizard'] ?? '') === '1' ? ' data-wizard-start="1"' : '' ?> data-wizard-order="customer,items,terms,delivery,texts,summary" data-editor="<?= json_attr($editorConfig) ?>" novalidate>
   <?= csrf_field() ?>
   <?php if ($from): ?><input type="hidden" name="parent_id" value="<?= (int) $from['id'] ?>"><?php endif; ?>
   <?php if (!empty($form['inquiry_id']) && ($inqRow = DB::one('SELECT * FROM inquiries WHERE id = ?', [(int) $form['inquiry_id']]))): ?>
@@ -43,13 +43,13 @@ $editorConfig = [
 
   <div class="min-w-0 space-y-6 xl:col-span-2">
     <!-- Kunde & Bereich -->
-    <section class="reveal card">
+    <section class="reveal card" data-step="customer" data-step-title="Kunde &amp; Bereich" data-step-icon="bx-user">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-user"></i>Kunde &amp; Produktbereich</h2>
         <a href="<?= e(url('admin/customers/new')) ?>" class="btn btn-ghost btn-sm"><i class="bx bx-user-plus"></i>Neuer Kunde</a></div>
       <div class="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
         <div class="sm:col-span-2">
           <label class="label" for="customer_id">Kunde <span class="text-rose-500">*</span></label>
-          <select class="input<?= isset($errors['customer_id']) ? ' input-error' : '' ?>" id="customer_id" name="customer_id" required data-customer>
+          <select class="input<?= isset($errors['customer_id']) ? ' input-error' : '' ?>" id="customer_id" name="customer_id" data-sum="Kunde" required data-customer>
             <option value="">Kunde wählen …</option>
             <?php foreach ($customers as $c): ?>
               <option value="<?= (int) $c['id'] ?>"<?= (int) $f('customer_id') === (int) $c['id'] ? ' selected' : '' ?>><?= e(customer_name($c)) ?><?= $c['company'] ? ' – ' . e(trim($c['first_name'] . ' ' . $c['last_name'])) : '' ?> (<?= e($c['customer_no']) ?>)</option>
@@ -63,7 +63,7 @@ $editorConfig = [
           <div class="grid gap-3 sm:grid-cols-2">
             <?php foreach ($areas as $a): ?>
               <label class="group relative flex cursor-pointer items-start gap-3 rounded-xl p-4 ring-1 ring-slate-200 transition hover:ring-slate-300 has-[:checked]:bg-brand-50/60 has-[:checked]:ring-2 has-[:checked]:ring-brand-500">
-                <input type="radio" class="sr-only" name="product_area_id" value="<?= (int) $a['id'] ?>" data-area <?= (int) $f('product_area_id') === (int) $a['id'] ? 'checked' : '' ?>>
+                <input type="radio" class="sr-only" name="product_area_id" data-sum="Produktbereich" value="<?= (int) $a['id'] ?>" data-area <?= (int) $f('product_area_id') === (int) $a['id'] ? 'checked' : '' ?>>
                 <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-xl text-slate-500 transition group-has-[:checked]:bg-brand-600 group-has-[:checked]:text-white"><i class="bx <?= e($a['icon']) ?>"></i></span>
                 <span class="min-w-0"><span class="block text-sm font-semibold text-slate-900"><?= e($a['name']) ?></span><span class="block text-xs text-slate-500"><?= $a['type'] === 'digital' ? 'Digital – ohne Versand' : 'Physisch – mit Versand' ?></span></span>
                 <i class="bx bxs-check-circle absolute right-3 top-3 text-xl text-brand-600 opacity-0 transition group-has-[:checked]:opacity-100"></i>
@@ -75,14 +75,14 @@ $editorConfig = [
         </div>
         <div class="sm:col-span-2">
           <label class="label" for="title">Titel der Offerte <span class="text-rose-500">*</span></label>
-          <input class="input<?= isset($errors['title']) ? ' input-error' : '' ?>" id="title" name="title" value="<?= e($f('title')) ?>" maxlength="190" placeholder="z. B. Website-Relaunch 2027" required>
+          <input class="input<?= isset($errors['title']) ? ' input-error' : '' ?>" id="title" name="title" data-sum="Titel" value="<?= e($f('title')) ?>" maxlength="190" placeholder="z. B. Website-Relaunch 2027" required>
           <?= $err('title') ?>
         </div>
       </div>
     </section>
 
     <!-- Positionen -->
-    <section class="reveal card">
+    <section class="reveal card" data-step="items" data-step-title="Positionen" data-step-icon="bx-list-ul">
       <div class="card-header">
         <h2 class="card-title"><i class="bx bx-list-ul"></i>Positionen <span class="badge badge-slate" data-item-count>0</span></h2>
         <button type="button" class="btn btn-secondary btn-sm" data-modal-open="modal-templates"><i class="bx bx-bookmarks"></i>Aus Vorlage</button>
@@ -96,7 +96,7 @@ $editorConfig = [
     </section>
 
     <!-- Texte -->
-    <section class="reveal card">
+    <section class="reveal card" data-step="texts" data-step-title="Texte" data-step-icon="bx-text">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-text"></i>Texte</h2></div>
       <div class="grid gap-4 p-5 sm:p-6">
         <div><label class="label" for="intro">Einleitung</label><textarea class="input" id="intro" name="intro" rows="3"><?= e($f('intro')) ?></textarea></div>
@@ -107,12 +107,12 @@ $editorConfig = [
 
   <!-- Seitenleiste -->
   <div class="space-y-6">
-    <section class="reveal reveal-delay-1 card">
+    <section class="reveal reveal-delay-1 card" data-step="terms" data-step-title="Konditionen" data-step-icon="bx-calendar">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-calendar"></i>Gültigkeit</h2></div>
       <div class="space-y-3 p-5 sm:p-6">
         <div>
           <label class="label" for="valid_until">Gültig bis</label>
-          <input class="input<?= isset($errors['valid_until']) ? ' input-error' : '' ?>" type="date" id="valid_until" name="valid_until" value="<?= e($f('valid_until')) ?>" min="<?= date('Y-m-d') ?>" data-valid-until<?= $f('no_expiry') ? ' disabled' : '' ?>>
+          <input class="input<?= isset($errors['valid_until']) ? ' input-error' : '' ?>" type="date" id="valid_until" name="valid_until" data-sum="Gültig bis" value="<?= e($f('valid_until')) ?>" min="<?= date('Y-m-d') ?>" data-valid-until<?= $f('no_expiry') ? ' disabled' : '' ?>>
           <?= $err('valid_until') ?>
           <div class="mt-2 flex flex-wrap gap-1.5" data-valid-quick>
             <?php foreach ([14, 30, 60, 90] as $dd): ?><button type="button" class="btn btn-ghost btn-sm" data-valid-days="<?= $dd ?>">+<?= $dd ?> Tage</button><?php endforeach; ?>
@@ -158,14 +158,14 @@ $editorConfig = [
       </div>
     </section>
 
-    <section class="reveal reveal-delay-1 card">
+    <section class="reveal reveal-delay-1 card" data-step="terms">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-receipt"></i>Steuern &amp; Rabatt</h2></div>
       <div class="space-y-4 p-5 sm:p-6">
         <div data-tax-wrap>
           <div class="mb-1.5 flex items-center justify-between gap-2">
             <label class="label !mb-0" for="tax_template_id">Steuervorlage</label>
           </div>
-          <select class="input<?= isset($errors['tax_template_id']) ? ' input-error' : '' ?>" id="tax_template_id" name="tax_template_id" data-default-tax>
+          <select class="input<?= isset($errors['tax_template_id']) ? ' input-error' : '' ?>" id="tax_template_id" name="tax_template_id" data-sum="Steuervorlage" data-default-tax>
             <?php $curTax = (int) $f('tax_template_id'); $hasCur = $curTax && TaxService::find($curTax); foreach ($taxes as $t): ?>
               <option value="<?= (int) $t['id'] ?>"<?= ($hasCur ? $curTax === (int) $t['id'] : !empty($t['is_default'])) ? ' selected' : '' ?>><?= e($t['display']) ?> – <?= e($t['name']) ?></option>
             <?php endforeach; ?>
@@ -187,12 +187,12 @@ $editorConfig = [
       </div>
     </section>
 
-    <section class="reveal reveal-delay-2 card" data-physical hidden>
+    <section class="reveal reveal-delay-2 card" data-physical data-step="delivery" data-step-title="Lieferung" data-step-icon="bx-car" hidden>
       <div class="card-header"><h2 class="card-title"><i class="bx bx-car"></i>Versand</h2></div>
       <div class="space-y-4 p-5 sm:p-6">
         <div>
           <label class="label" for="shipping_method">Versandart</label>
-          <input class="input" id="shipping_method" name="shipping_method" list="shipping-list" value="<?= e($f('shipping_method')) ?>" placeholder="Versandart wählen oder eingeben" data-shipping-method>
+          <input class="input" id="shipping_method" name="shipping_method" data-sum="Versandart" list="shipping-list" value="<?= e($f('shipping_method')) ?>" placeholder="Versandart wählen oder eingeben" data-shipping-method>
           <datalist id="shipping-list"><?php foreach ($shipping as $s): ?><option value="<?= e($s['name']) ?>"><?= e(money($s['cost'])) ?></option><?php endforeach; ?></datalist>
         </div>
         <div>
@@ -203,7 +203,7 @@ $editorConfig = [
       </div>
     </section>
 
-    <section class="reveal reveal-delay-2 card">
+    <section class="reveal reveal-delay-2 card" data-step="delivery">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-map"></i>Lieferadresse</h2></div>
       <div class="space-y-4 p-5 sm:p-6">
         <p class="text-sm text-slate-500">Standard: Adresse des Kunden. Der Kunde kann sie bei der Annahme ändern.</p>
@@ -222,16 +222,21 @@ $editorConfig = [
       </div>
     </section>
 
-    <section class="reveal reveal-delay-2 card">
+    <section class="reveal reveal-delay-2 card" data-step="delivery">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-info-circle"></i><span data-delivery-label>Lieferhinweis</span></h2></div>
       <div class="p-5 sm:p-6">
-        <input class="input" name="delivery_info" value="<?= e($f('delivery_info')) ?>" maxlength="255" placeholder="z. B. Lieferung innert 10 Arbeitstagen" data-delivery-info>
+        <input class="input" name="delivery_info" data-sum="Lieferhinweis" value="<?= e($f('delivery_info')) ?>" maxlength="255" placeholder="z. B. Lieferung innert 10 Arbeitstagen" data-delivery-info>
         <p class="hint">Erscheint auf der Offerte, z. B. Lieferzeit oder Form der Bereitstellung.</p>
       </div>
     </section>
 
     <!-- Summen -->
-    <section class="reveal reveal-delay-3 card xl:sticky xl:top-6">
+    <section class="card" data-step="summary" data-step-title="Prüfen &amp; senden" data-step-icon="bx-check-circle" data-wizard-only hidden data-wizard-summary>
+      <div class="card-header"><h2 class="card-title"><i class="bx bx-list-check"></i>Ihre Angaben</h2></div>
+      <div class="px-5 py-3 sm:px-6" data-wz-sum-body></div>
+    </section>
+
+    <section class="reveal reveal-delay-3 card xl:sticky xl:top-6" data-step="summary">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-calculator"></i>Zusammenfassung</h2></div>
       <dl class="px-5 py-4 sm:px-6" data-totals>
         <div class="dl-row"><dt>Zwischensumme</dt><dd class="tabular" data-t="subtotal">–</dd></div>
@@ -275,3 +280,15 @@ $editorConfig = [
     </div>
   </div>
 </div>
+<script>
+document.getElementById('offer-form').addEventListener('wizard:validate', function (e) {
+  if (e.detail.step === 'items') {
+    var rows = this.querySelectorAll('[data-items] [data-row]');
+    var ok = Array.prototype.some.call(rows, function (r) { var t = r.querySelector('input[name$="[title]"]'); return t && t.value.trim() !== ''; });
+    if (!ok) { e.preventDefault(); window.toast && window.toast('Bitte mindestens eine Position mit Titel erfassen.', 'error'); }
+  }
+  if (e.detail.step === 'customer' && this.querySelector('[name=product_area_id]') && !this.querySelector('[name=product_area_id]:checked')) {
+    e.preventDefault(); window.toast && window.toast('Bitte einen Produktbereich wählen.', 'error');
+  }
+});
+</script>
