@@ -2,6 +2,13 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 1.6.1 – 2026-10-16
+
+### Behoben
+- Formulare mit Assistenten (Kunde, Offerte): Im normalen Formular-Modus war das Layout verschoben, weil der Umschalter «Formular | Assistent» eine Spalte belegte.
+- Assistent in Dialogen: Die Wahl «Assistent» wurde fälschlich für alle Dialoge gemeinsam gemerkt (Benutzer, Bereiche, Vorlagen …); sie gilt jetzt pro Dialog.
+- Schrittanzeige in Dialogen und bei vielen Schritten: nur der aktuelle Schritt zeigt seine Bezeichnung, die übrigen sind abgekürzte Punkte (vorher abgeschnittene Buchstaben).
+
 ## 1.6.0 – 2026-10-16
 
 ### Neu

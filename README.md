@@ -1,6 +1,6 @@
 # VylarisOffers – Offerten- & Auftragsmanagement
 
-**Version 1.6.0** – Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
+**Version 1.6.1** – Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
 
 PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand – **ausgelegt auf die Schweiz** (MWST, QR-Rechnung, CHF). Ohne Framework, ohne Composer, ohne Build-Schritt – läuft auf jedem Shared Hosting mit Plesk.
 

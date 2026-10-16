@@ -1,6 +1,6 @@
 # VylarisOffers – Styleguide & Designentscheide
 
-Dieses Dokument beschreibt, **wie die Oberfläche gestaltet ist**, **welche Bibliotheken** dafür verwendet werden und **warum** wichtige Entscheidungen so getroffen wurden. Es richtet sich an alle, die das System weiterentwickeln oder das Erscheinungsbild anpassen. Stand: Version 1.6.0.
+Dieses Dokument beschreibt, **wie die Oberfläche gestaltet ist**, **welche Bibliotheken** dafür verwendet werden und **warum** wichtige Entscheidungen so getroffen wurden. Es richtet sich an alle, die das System weiterentwickeln oder das Erscheinungsbild anpassen. Stand: Version 1.6.1.
 
 > Hinweis: `.md`-Dateien werden vom Webserver nicht ausgeliefert (`.htaccess`). Das Dokument ist nur für Entwickler im Dateisystem bzw. im Repository gedacht.
 

@@ -34,7 +34,7 @@
   function setup(form) {
     if (form.__wizard) return;
     const auto = form.dataset.wizard === 'auto';
-    const key = 'wz:' + (form.dataset.wizardKey || form.id || (form.getAttribute('action') || location.pathname));
+    const key = 'wz:' + (form.dataset.wizardKey || form.getAttribute('id') || form.getAttribute('action') || location.pathname);
     const inModal = !!form.closest('.modal');
     let on = false;
     let steps = [];
@@ -122,6 +122,7 @@
         return `<li class="wz-step ${state}"><button type="button" data-wz-goto="${i}" ${i === cur ? 'aria-current="step"' : ''}${i > cur ? ' tabindex="-1"' : ''}>
           <span class="wz-dot">${i < cur ? '<i class="bx bx-check"></i>' : (n + 1)}</span><span class="wz-label">${esc(s.title)}</span></button></li>`;
       }).join('');
+      $('.wz-head', ui).classList.toggle('wz-compact', idx.length > 5 || inModal);
       const pos = idx.indexOf(cur);
       $('[data-wz-bar]', ui).style.width = (idx.length > 1 ? (pos / (idx.length - 1)) * 100 : 100) + '%';
       $('[data-wz-count]', ui).textContent = `Schritt ${pos + 1} von ${idx.length}: ${steps[cur].title}`;
