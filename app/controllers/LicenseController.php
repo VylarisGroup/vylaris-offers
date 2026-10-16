@@ -23,23 +23,7 @@ final class LicenseController
             redirect('admin/license');
         }
         if (isset($_POST['advanced'])) {
-            $server = rtrim(trim((string) ($_POST['license_server'] ?? '')), '/');
-            if ($server !== '' && !preg_match('#^https://[^\s/]+$#i', $server) && !preg_match('#^http://(localhost|127\.0\.0\.1)(:\d+)?$#i', $server)) {
-                flash('error', 'Die Server-Adresse muss mit https:// beginnen (ohne Pfad).');
-                redirect('admin/license');
-            }
-            $pem = trim(str_replace("\r", '', (string) ($_POST['license_public_key'] ?? '')));
-            if ($pem !== '' && License::pemToRaw($pem) === null) {
-                flash('error', 'Der öffentliche Schlüssel ist kein gültiger Ed25519-Schlüssel (PEM, «BEGIN PUBLIC KEY»).');
-                redirect('admin/license');
-            }
-            $product = strtolower(trim((string) ($_POST['license_product'] ?? '')));
-            Settings::set([
-                'license_server' => $server ?: License::DEFAULT_SERVER,
-                'license_public_key' => $pem,
-                'license_product' => preg_match('/^[a-z0-9][a-z0-9._-]{0,63}$/', $product) ? $product : License::DEFAULT_PRODUCT,
-                'license_grace_days' => (string) max(0, min(14, (int) ($_POST['license_grace_days'] ?? 3))),
-            ]);
+            Settings::set(['license_grace_days' => (string) max(0, min(14, (int) ($_POST['license_grace_days'] ?? 3)))]);
         }
         License::setKey($key);
         Audit::log('license', $key === '' ? 'Schlüssel entfernt' : 'Schlüssel/Einstellungen geändert', null, null, $user);
@@ -60,7 +44,6 @@ final class LicenseController
             'activate'   => License::activate(),
             'deactivate' => License::deactivate(),
             'offline'    => License::fetchOffline() + ['ok' => true],
-            'fetch-key'  => License::fetchPublicKey(),
             default      => throw new HttpException(404),
         };
         if ($action === 'offline') {

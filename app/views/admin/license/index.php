@@ -43,23 +43,16 @@ $fmtTs = static fn (?int $t) => $t ? date('d.m.Y H:i', $t) : '–';
       <p class="hint">Der Schlüssel wird verschlüsselt gespeichert. An den Lizenzserver gehen Schlüssel, Geräte-ID (Domain + Installations-ID), Geräte-Name und Ihre IP-Adresse.</p>
     </form>
 
-    <details class="reveal card p-5 sm:p-6" <?= License::pemToRaw(License::publicKey()) === null ? 'open' : '' ?>>
+    <details class="reveal card p-5 sm:p-6">
       <summary class="cursor-pointer text-sm font-semibold text-slate-900"><i class="bx bx-cog align-middle text-slate-400"></i> Erweitert</summary>
       <form method="post" action="<?= e(url('admin/license')) ?>" class="mt-4 grid gap-4 sm:grid-cols-2"><?= csrf_field() ?>
         <input type="hidden" name="advanced" value="1"><input type="hidden" name="license_key" value="<?= e(License::key()) ?>">
-        <div><label class="label">Lizenzserver</label><input class="input font-mono text-[13px]" name="license_server" value="<?= e(License::server()) ?>"></div>
-        <div><label class="label">Produkt-Kennung</label><input class="input font-mono text-[13px]" name="license_product" value="<?= e(License::product()) ?>"><p class="hint">Muss der Kennung des Produkts im Lizenz-Panel entsprechen.</p></div>
-        <div class="sm:col-span-2"><label class="label">Öffentlicher Schlüssel (Ed25519, PEM)</label>
-          <textarea class="input font-mono text-[12px]" rows="5" name="license_public_key" placeholder="-----BEGIN PUBLIC KEY-----&#10;…&#10;-----END PUBLIC KEY-----"><?= e(License::publicKey()) ?></textarea>
-          <p class="hint">Standardmässig ist der Schlüssel des Lizenzservers fest eingebaut; nur bei einem Schlüsselwechsel ändern. Alle Serverantworten werden damit auf Echtheit geprüft.</p></div>
         <div><label class="label">Karenzfrist ohne Server (Tage)</label><input class="input" type="number" min="0" max="14" name="license_grace_days" value="<?= e(Settings::get('license_grace_days', '3')) ?>"><p class="hint">Gilt, wenn der Server nicht erreichbar ist und keine Offline-Lizenz mehr gültig ist.</p></div>
         <div class="flex items-end justify-end gap-2 sm:col-span-2">
           <button class="btn btn-primary"><i class="bx bx-save"></i>Speichern</button>
         </div>
       </form>
-      <form method="post" action="<?= e(url('admin/license/fetch-key')) ?>" class="mt-2" data-confirm="Den Schlüssel einmalig vom Server übernehmen? Sicherer ist es, ihn aus dem Lizenz-Panel einzufügen – ein Angreifer im Netzwerk könnte sonst einen eigenen Schlüssel unterschieben." data-confirm-label="Übernehmen"><?= csrf_field() ?>
-        <button class="btn btn-ghost btn-sm"><i class="bx bx-cloud-download"></i>Öffentlichen Schlüssel einmalig vom Server laden</button></form>
-    </details>
+</details>
   </div>
 
   <aside class="space-y-6">

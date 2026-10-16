@@ -1,5 +1,7 @@
 # VylarisOffers – Offerten- & Auftragsmanagement
 
+**Version 1.5.0** – Neu in 1.5.0: Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
+
 PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand – **ausgelegt auf die Schweiz** (MWST, QR-Rechnung, CHF). Ohne Framework, ohne Composer, ohne Build-Schritt – läuft auf jedem Shared Hosting mit Plesk.
 
 ---
@@ -543,7 +545,7 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 
 VylarisOffers ist **lizenzpflichtig** und prüft die Lizenz über die TRS-License-Prüf-API (`https://licence.vylaris.ch`, Dokumentation 1.3).
 
-**Einrichten**: im Installationsassistenten (Schritt «Firma», Abschnitt *Lizenz*) oder später unter *Lizenz* in der Administration: Lizenzschlüssel eintragen, *Speichern & aktivieren*. Der öffentliche Ed25519-Schlüssel des Lizenzservers ist fest eingebaut (`License::DEFAULT_PUBLIC_KEY`); er kann unter *Lizenz → Erweitert* nur bei einem Schlüsselwechsel überschrieben werden. Die **Produkt-Kennung** (Standard `vylarisoffers`) muss dem Produkt im Lizenz-Panel entsprechen (*Lizenz → Erweitert*). Bestehende Installationen laufen nach dem Update im Lesemodus, bis ein Schlüssel hinterlegt ist.
+**Einrichten**: im Installationsassistenten (Schritt «Firma», Abschnitt *Lizenz*) oder später unter *Lizenz* in der Administration: Lizenzschlüssel eintragen, *Speichern & aktivieren*. Lizenzserver (`https://licence.vylaris.ch`), Produkt-Kennung (`vylarisoffers`) und der öffentliche Ed25519-Schlüssel zur Prüfung der Serverantworten sind fest im Programm hinterlegt (`License::DEFAULT_SERVER`, `DEFAULT_PRODUCT`, `DEFAULT_PUBLIC_KEY`) und weder für Benutzer noch für Administratoren änderbar. Unter *Lizenz → Erweitert* lässt sich nur die Karenzfrist einstellen. Bestehende Installationen laufen nach dem Update im Lesemodus, bis ein Schlüssel hinterlegt ist.
 
 **Ablauf**: Die Aktivierung bindet die Installation an einen Geräteplatz; die **Geräte-ID** besteht aus Domain und zufälliger Installations-ID (Domainwechsel → erneut aktivieren). Danach wird alle 6 Stunden geprüft (beim Aufruf der Administration und per Cronjob), nach Fehlschlägen alle 15 Minuten. Jede Serverantwort wird mit dem fest hinterlegten öffentlichen Schlüssel auf ihre **Signatur** geprüft (libsodium); ausgewertet werden nur die signierten Daten (`payload`), und die gespeicherten Beweise werden bei jeder Anfrage neu verifiziert. *Gerät abmelden* gibt den Geräteplatz frei.
 
@@ -602,7 +604,11 @@ Die Software kann sich aus einem GitHub-Repository aktualisieren (*Update* in de
 - Ohne Anhang wird der automatisch erzeugte Quellcode-Download des Tags verwendet.
 - Optional hängen Sie ein fertiges ZIP an (z. B. `vylarisoffers.zip`) – dieses hat Vorrang. Zusätzlich kann eine Datei `vylarisoffers.zip.sha256` (SHA-256 als Hex) angehängt werden; sie wird vor dem Einspielen geprüft.
 
-**Einrichten**: Voreingestellt ist `VylarisGroup/vylaris-offers` (unter *Update* änderbar; ein leeres Feld setzt auf diese Voreinstellung zurück). Anderes Repository: `besitzer/repository` oder GitHub-Adresse eintragen. **Öffentliche** Repositories brauchen kein Token. Bei **privaten** Repositories ein *Fine-grained personal access token* anlegen (GitHub → Settings → Developer settings), nur für dieses Repository, Berechtigung *Contents: Read-only*, und eintragen (wird verschlüsselt gespeichert und nur an GitHub gesendet). Die Angaben lassen sich auch im Installationsassistenten (Schritt «Datenschutz & Betrieb») machen.
+**Update-Quelle**: Die Quelle (`VylarisGroup/vylaris-offers`) ist im Programm fest hinterlegt (`UpdateService::DEFAULT_REPO`) und über die Oberfläche nicht änderbar; Benutzer und Administratoren können sie nicht umstellen. Unter *Update* lässt sich nur die Automatik ein- und ausschalten. Ist das Repository **privat**, trägt der Betreiber ein Lesetoken (*Fine-grained personal access token*, nur dieses Repository, *Contents: Read-only*) serverseitig in `app/config.php` ein:
+```php
+'update' => ['token' => 'github_pat_…'],
+```
+Das Token wird nur an GitHub gesendet, nie an Weiterleitungsziele.
 
 **Ablauf einer Aktualisierung**: neuestes Release lesen → ZIP laden → Prüfsumme, Versionsnummer und Dateipfade prüfen → **Sicherung** (Datenbank und alle zu überschreibenden Programmdateien nach `storage/update/`, die letzten 3 bleiben) → Dateien einzeln atomar ersetzen. Schlägt etwas fehl, wird automatisch zurückgesetzt. Neue Tabellen/Spalten legt das System beim nächsten Aufruf selbst an (Schema-Migration). *Auf Version x zurücksetzen* stellt die Programmdateien der letzten Sicherung wieder her (die Datenbank bleibt unverändert).
 

@@ -6,7 +6,6 @@ $repo = UpdateService::repo();
 $avail = UpdateService::available();
 $checked = (int) Settings::get('update_checked_at', '0');
 $err = (string) Settings::get('update_error', '');
-$hasToken = (string) Settings::get('update_token', '') !== '';
 $fmt = static fn (int $t) => $t ? date('d.m.Y H:i', $t) : '–';
 ?>
 <div class="grid gap-6 xl:grid-cols-3">
@@ -37,18 +36,11 @@ $fmt = static fn (int $t) => $t ? date('d.m.Y H:i', $t) : '–';
     </section>
 
     <form method="post" action="<?= e(url('admin/update')) ?>" class="reveal card p-5 sm:p-6"><?= csrf_field() ?>
-      <h2 class="text-base font-semibold text-slate-900">GitHub-Repository</h2>
-      <div class="mt-4 grid gap-4 sm:grid-cols-2">
-        <div class="sm:col-span-2"><label class="label">Repository</label><input class="input font-mono text-[13px]" name="update_repo" value="<?= e($repo) ?>" placeholder="<?= e(UpdateService::DEFAULT_REPO) ?>" autocomplete="off" spellcheck="false">
-          <p class="hint">Updates stammen aus dem neuesten <strong>Release</strong> (Tag z. B. <code>v1.1.0</code>). Vorabversionen und Entwürfe werden ignoriert. Hängt am Release eine <code>.zip</code>-Datei an, wird diese verwendet, sonst der Quellcode des Tags. Optional prüft eine Datei <code>&lt;name&gt;.zip.sha256</code> die Integrität.</p></div>
-        <div class="sm:col-span-2"><label class="label">Zugriffs-Token <span class="font-normal text-slate-400">(nur bei privatem Repository)</span></label>
-          <input class="input font-mono text-[13px]" type="password" name="update_token" value="" placeholder="<?= $hasToken ? '•••••••• (gespeichert – leer lassen, um es zu behalten)' : 'github_pat_…' ?>" autocomplete="new-password" spellcheck="false">
-          <p class="hint">GitHub → Settings → Developer settings → <em>Fine-grained personal access tokens</em>: nur dieses Repository, Berechtigung <em>Contents: Read-only</em>. Das Token wird verschlüsselt gespeichert und nur an GitHub gesendet.</p>
-          <?php if ($hasToken): ?><label class="mt-1 flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" class="size-4 rounded accent-indigo-600" name="update_token_remove" value="1"> Gespeichertes Token entfernen</label><?php endif; ?></div>
-        <label class="flex cursor-pointer items-start gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200/70 sm:col-span-2"><input type="checkbox" class="mt-0.5 size-4 rounded accent-indigo-600" name="update_auto" value="1" <?= Settings::get('update_auto', '0') === '1' ? 'checked' : '' ?>>
-          <span><span class="block text-sm font-medium text-slate-900">Updates automatisch installieren</span><span class="block text-xs text-slate-500">Der Cronjob (<code>cron.php</code>) installiert neue Versionen derselben Hauptversion selbstständig, mit Sicherung. Hauptversions-Sprünge (z. B. 1.x → 2.0) immer manuell. Ohne Cronjob erfolgt keine Automatik.</span></span></label>
-      </div>
-      <div class="mt-5 flex justify-end"><button class="btn btn-primary"><i class="bx bx-save"></i>Speichern &amp; prüfen</button></div>
+      <h2 class="text-base font-semibold text-slate-900">Einstellungen</h2>
+      <label class="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200/70"><input type="checkbox" class="mt-0.5 size-4 rounded accent-indigo-600" name="update_auto" value="1" <?= Settings::get('update_auto', '0') === '1' ? 'checked' : '' ?>>
+        <span><span class="block text-sm font-medium text-slate-900">Updates automatisch installieren</span><span class="block text-xs text-slate-500">Der Cronjob (<code>cron.php</code>) installiert neue Versionen derselben Hauptversion selbstständig, mit Sicherung. Hauptversions-Sprünge (z. B. 1.x → 2.0) immer manuell. Ohne Cronjob erfolgt keine Automatik.</span></span></label>
+      <p class="mt-3 text-xs text-slate-400">Die Update-Quelle ist fest vorgegeben und kann hier nicht geändert werden.</p>
+      <div class="mt-5 flex justify-end"><button class="btn btn-primary"><i class="bx bx-save"></i>Speichern</button></div>
     </form>
   </div>
 

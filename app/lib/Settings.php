@@ -5,7 +5,7 @@ declare(strict_types=1);
 final class Settings
 {
     private static ?array $cache = null;
-    private const ENCRYPTED = ['update_token', 'sso_client_secret', 'license_key', 'smtp_pass', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret'];
+    private const ENCRYPTED = ['sso_client_secret', 'license_key', 'smtp_pass', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret'];
 
     public const DEFAULTS = [
         'company_name' => 'Meine Firma',
@@ -66,16 +66,11 @@ final class Settings
         'sso_admin_group' => '',
         'sso_allowed_domains' => '',
         'sso_required' => '0',
-        'update_repo' => '',
-        'update_token' => '',
         'update_auto' => '0',
         'update_latest' => '',
         'update_checked_at' => '0',
         'update_last' => '',
         'update_error' => '',
-        'update_api_base' => '',
-        'license_server' => 'https://licence.vylaris.ch',
-        'license_product' => 'vylarisoffers',
         'license_grace_days' => '3',
         'privacy_contact' => '',
         'privacy_text' => '',

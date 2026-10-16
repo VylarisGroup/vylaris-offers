@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 define('APP_ROOT', __DIR__);
 define('APP_DIR', __DIR__ . '/app');
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '1.5.0');
 
 $configFile = APP_DIR . '/config.php';
 $lockFile = APP_ROOT . '/storage/install.lock';
@@ -270,19 +270,13 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $_SESSION['setup']['app'] = $app;
                 $lic = [];
-                foreach (['license_key', 'license_public_key', 'license_server', 'license_product'] as $k) {
+                foreach (['license_key'] as $k) {
                     $lic[$k] = trim(str_replace("\r", '', (string) ($_POST[$k] ?? '')));
                 }
                 $lic['license_key'] = strtoupper($lic['license_key']);
                 $_SESSION['setup']['lic'] = $lic;
                 if ($lic['license_key'] !== '' && !preg_match('/^[A-Z0-9][A-Z0-9_-]{5,63}$/', $lic['license_key'])) {
                     throw new RuntimeException('Der Lizenzschlüssel hat ein ungültiges Format.');
-                }
-                if ($lic['license_public_key'] !== '' && License::pemToRaw($lic['license_public_key']) === null) {
-                    throw new RuntimeException('Der öffentliche Lizenz-Schlüssel ist kein gültiger Ed25519-Schlüssel (PEM, «BEGIN PUBLIC KEY»).');
-                }
-                if ($lic['license_server'] !== '' && !preg_match('#^(https://[^\s/]+|http://(localhost|127\.0\.0\.1)(:\d+)?)$#i', rtrim($lic['license_server'], '/'))) {
-                    throw new RuntimeException('Die Adresse des Lizenzservers muss mit https:// beginnen.');
                 }
                 $sso = ['sso_issuer' => trim((string) ($_POST['sso_issuer'] ?? '')), 'sso_auto_create' => !empty($_POST['sso_auto_create']) ? '1' : '0'];
                 if ($sso['sso_issuer'] !== '') {
@@ -433,21 +427,7 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ops['audit_retention_days'] = (string) max(30, min(3650, (int) ($ops['audit_retention_days'] ?: 365)));
                 $ops['show_contact_person'] = !empty($_POST['show_contact_person']) ? '1' : '0';
                 $ops['mail_attach_pdf'] = !empty($_POST['mail_attach_pdf']) ? '1' : '0';
-                $ops['update_repo'] = trim((string) ($_POST['update_repo'] ?? ''));
-                $ops['update_token'] = trim((string) ($_POST['update_token'] ?? ''));
                 $ops['update_auto'] = !empty($_POST['update_auto']) ? '1' : '0';
-                if ($ops['update_repo'] !== '') {
-                    $rp = UpdateService::parseRepo($ops['update_repo']);
-                    if ($rp === null) {
-                        $_SESSION['setup']['ops'] = $ops;
-                        throw new RuntimeException('Das GitHub-Repository ist ungültig (erwartet: besitzer/repository).');
-                    }
-                    $ops['update_repo'] = $rp;
-                }
-                if ($ops['update_token'] !== '' && !preg_match('/^[A-Za-z0-9_\-]{20,255}$/', $ops['update_token'])) {
-                    $_SESSION['setup']['ops'] = $ops;
-                    throw new RuntimeException('Das GitHub-Zugriffs-Token hat ein ungültiges Format.');
-                }
                 $_SESSION['setup']['ops'] = $ops;
                 $_SESSION['setup_step'] = 8;
                 break;
@@ -518,9 +498,6 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $settings += array_intersect_key($cfg['pay'] ?? [], array_flip(['pay_mollie_enabled', 'pay_stripe_enabled', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret']));
                 $settings += $cfg['ops'] ?? [];
                 $lic = $cfg['lic'] ?? [];
-                $settings += ['license_server' => rtrim((string) ($lic['license_server'] ?? '') ?: 'https://licence.vylaris.ch', '/'),
-                              'license_product' => strtolower((string) ($lic['license_product'] ?? '') ?: 'vylarisoffers'),
-                              'license_public_key' => (string) ($lic['license_public_key'] ?? '')];
                 $sso = $cfg['sso'] ?? [];
                 if (($sso['sso_issuer'] ?? '') !== '') {
                     $settings += ['sso_issuer' => $sso['sso_issuer'], 'sso_enabled' => '1', 'sso_auto_create' => $sso['sso_auto_create'] ?? '0'];
@@ -823,9 +800,6 @@ $steps = [1 => 'System', 2 => 'Datenbank', 3 => 'Firma', 4 => 'Zahlung', 5 => 'E
           <p class="mt-1 text-sm text-slate-500">VylarisOffers ist lizenzpflichtig. Ohne gültige Lizenz läuft das System im Lesemodus. Den Schlüssel können Sie auch später unter <em>Lizenz</em> eingeben.</p></div>
         <?php $lc = $_SESSION['setup']['lic'] ?? []; ?>
         <div class="sm:col-span-6"><label class="label">Lizenzschlüssel</label><input class="input font-mono" name="license_key" value="<?= s_e($lc['license_key'] ?? '') ?>" placeholder="XX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false"></div>
-        <div class="sm:col-span-6"><label class="label">Öffentlicher Schlüssel des Lizenzservers <span class="font-normal text-slate-400">(optional – bereits eingebaut)</span></label><textarea class="input font-mono text-[12px]" rows="4" name="license_public_key" placeholder="-----BEGIN PUBLIC KEY-----"><?= s_e($lc['license_public_key'] ?? '') ?></textarea></div>
-        <div class="sm:col-span-3"><label class="label">Lizenzserver</label><input class="input font-mono text-[13px]" name="license_server" value="<?= s_e($lc['license_server'] ?? 'https://licence.vylaris.ch') ?>"></div>
-        <div class="sm:col-span-3"><label class="label">Produkt-Kennung</label><input class="input font-mono text-[13px]" name="license_product" value="<?= s_e($lc['license_product'] ?? 'vylarisoffers') ?>"></div>
         <?php $sc = $_SESSION['setup']['sso'] ?? []; ?>
         <div class="sm:col-span-6 mt-2 border-t border-slate-100 pt-4"><h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><i class="bx bx-log-in-circle text-xl text-slate-400"></i>Single Sign-On <span class="font-normal text-slate-400">(optional)</span></h2>
           <p class="mt-1 text-sm text-slate-500">Mitarbeitende melden sich per OpenID Connect an. Es genügt die Adresse des Anbieters (z. B. <em>https://vylaris.tech</em>) – alles Weitere wird automatisch erkannt. Benötigt die Lizenzfunktion «sso».</p></div>
@@ -924,10 +898,8 @@ $steps = [1 => 'System', 2 => 'Datenbank', 3 => 'Firma', 4 => 'Zahlung', 5 => 'E
         <label class="flex cursor-pointer items-start gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200/70 sm:col-span-6"><input type="checkbox" class="mt-0.5 size-4 rounded accent-indigo-600" name="mail_attach_pdf" value="1" <?= ($o['mail_attach_pdf'] ?? '1') === '1' ? 'checked' : '' ?>><span class="text-sm text-slate-700">Offerten, Rechnungen und Zahlungsbestätigungen als PDF an E-Mails anhängen<span class="block text-xs text-slate-400">Das PDF enthält personenbezogene Daten. Für höchste Vertraulichkeit deaktivieren (dann nur Link).</span></span></label>
       </div>
       <div class="mt-6 grid gap-4 sm:grid-cols-6">
-        <div class="sm:col-span-6"><h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><i class="bx bx-cloud-download text-xl text-slate-400"></i>Software-Updates aus GitHub <span class="font-normal text-slate-400">(optional)</span></h2>
-          <p class="mt-1 text-sm text-slate-500">Neue Versionen werden aus den Releases Ihres GitHub-Repositories geladen und per Klick (oder automatisch per Cronjob) eingespielt – mit Sicherung. Später unter <em>Update</em> änderbar.</p></div>
-        <div class="sm:col-span-3"><label class="label">Repository</label><input class="input font-mono text-[13px]" name="update_repo" value="<?= s_e($o['update_repo'] ?? UpdateService::DEFAULT_REPO) ?>" placeholder="besitzer/repository" autocomplete="off" spellcheck="false"></div>
-        <div class="sm:col-span-3"><label class="label">Zugriffs-Token <span class="font-normal text-slate-400">(nur bei privatem Repository)</span></label><input class="input font-mono text-[13px]" type="password" name="update_token" value="<?= s_e($o['update_token'] ?? '') ?>" placeholder="github_pat_…" autocomplete="new-password"><p class="hint">Fine-grained Token, nur dieses Repository, <em>Contents: Read-only</em>.</p></div>
+        <div class="sm:col-span-6"><h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><i class="bx bx-cloud-download text-xl text-slate-400"></i>Software-Updates</h2>
+          <p class="mt-1 text-sm text-slate-500">Neue Versionen werden von der offiziellen Quelle geladen und per Klick (oder automatisch per Cronjob) eingespielt – mit Sicherung. Später unter <em>Update</em> änderbar.</p></div>
         <label class="flex cursor-pointer items-center gap-3 sm:col-span-6"><input type="checkbox" class="size-4 rounded accent-indigo-600" name="update_auto" value="1" <?= ($o['update_auto'] ?? '0') === '1' ? 'checked' : '' ?>><span class="text-sm text-slate-700">Updates automatisch installieren (benötigt den Cronjob)</span></label>
       </div>
       <div class="mt-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 ring-1 ring-slate-200/70"><p class="flex gap-2"><i class="bx bx-time-five mt-0.5 text-lg text-slate-400"></i><span><strong>Cronjob:</strong> Für Abo-Rechnungen, Webhook-Wiederholungen und Aufbewahrungsfristen empfehlen wir einen täglichen Cronjob. Die genaue Angabe zeigt Ihnen der Abschluss-Bildschirm. Ohne Cronjob läuft die Prüfung automatisch beim Öffnen der Administration.</span></p></div>

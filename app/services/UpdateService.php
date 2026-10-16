@@ -11,7 +11,7 @@ declare(strict_types=1);
 final class UpdateService
 {
     public const API = 'https://api.github.com';
-    /** Standard-Repository (in den Einstellungen überschreibbar). */
+    /** Update-Quelle (fest einkompiliert). */
     public const DEFAULT_REPO = 'VylarisGroup/vylaris-offers';
     private const MAX_ZIP = 120 * 1024 * 1024;
     private const MAX_UNPACKED = 300 * 1024 * 1024;
@@ -100,7 +100,7 @@ final class UpdateService
 
     public static function repo(): string
     {
-        return (string) (self::parseRepo((string) Settings::get('update_repo', '')) ?? self::DEFAULT_REPO);
+        return self::DEFAULT_REPO;   // Quelle ist fest vorgegeben und nicht über die Oberfläche änderbar
     }
 
     public static function configured(): bool
@@ -110,7 +110,7 @@ final class UpdateService
 
     private static function api(): string
     {
-        $b = rtrim((string) Settings::get('update_api_base', ''), '/');
+        $b = rtrim((string) app_config('update.api', ''), '/');   // nur per app/config.php (Tests)
         return $b !== '' ? $b : self::API;
     }
 
@@ -148,7 +148,7 @@ final class UpdateService
      */
     private static function http(string $url, array $headers = [], ?string $saveTo = null, bool $auth = true, int $redirects = 5): array
     {
-        $token = (string) Settings::get('update_token', '');
+        $token = (string) app_config('update.token', '');   // optional, nur per app/config.php (privates Repository)
         $apiHost = parse_url(self::api(), PHP_URL_HOST);
         for ($i = 0; $i <= $redirects; $i++) {
             if (!preg_match('#^(https://|http://(localhost|127\.0\.0\.1)(:\d+)?/)#i', $url)) {

@@ -237,20 +237,20 @@ final class License
 
     public static function server(): string
     {
-        return rtrim((string) (Settings::get('license_server') ?: self::DEFAULT_SERVER), '/');
+        return rtrim((string) (app_config('license.server') ?: self::DEFAULT_SERVER), '/');   // nur per app/config.php änderbar (Tests)
     }
 
     public static function product(): string
     {
-        return trim((string) (Settings::get('license_product') ?: self::DEFAULT_PRODUCT));
+        return self::DEFAULT_PRODUCT;
     }
 
-    /** Fest eingebauter öffentlicher Ed25519-Schlüssel des Lizenzservers (überschreibbar in den Einstellungen). */
+    /** Fest eingebauter öffentlicher Ed25519-Schlüssel des Lizenzservers (nicht über die Oberfläche änderbar). */
     public const DEFAULT_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAhV7L176abx5a05XciRbOOeFj6wkCnNiDrwEXw7KceiU=\n-----END PUBLIC KEY-----";
 
     public static function publicKey(): string
     {
-        $k = trim((string) Settings::get('license_public_key', ''));
+        $k = trim((string) app_config('license.public_key', ''));   // nur per app/config.php (Tests)
         return $k !== '' ? $k : self::DEFAULT_PUBLIC_KEY;
     }
 
@@ -447,26 +447,6 @@ final class License
         $st['offline_at'] = time();
         self::saveState($st);
         return ['ok' => true, 'message' => 'Offline-Lizenz gespeichert.'];
-    }
-
-    /** Öffentlichen Schlüssel einmalig vom Server übernehmen (Vertrauen beim ersten Mal – besser: Schlüssel aus dem Panel einfügen). */
-    public static function fetchPublicKey(): array
-    {
-        $res = self::request('GET', '/api/v1/public-key');
-        if (!$res['ok']) {
-            return ['ok' => false, 'message' => 'Lizenzserver nicht erreichbar: ' . $res['error']];
-        }
-        $raw = (string) ($res['raw'] ?? '');
-        $pem = null;
-        if (preg_match('/-----BEGIN PUBLIC KEY-----.+?-----END PUBLIC KEY-----/s', str_replace(['\\n', '\\r'], ["\n", ''], $raw), $m)) {
-            $pem = $m[0];
-        }
-        if ($pem === null || self::pemToRaw($pem) === null) {
-            return ['ok' => false, 'message' => 'Der Server lieferte keinen gültigen Ed25519-Schlüssel.'];
-        }
-        Settings::set(['license_public_key' => $pem]);
-        self::$eval = null;
-        return ['ok' => true, 'message' => 'Öffentlicher Schlüssel übernommen.'];
     }
 
     /** Vollständige Aktivierung: aktivieren, Offline-Lizenz holen. */
