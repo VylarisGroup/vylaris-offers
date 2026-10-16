@@ -46,6 +46,8 @@ $r->post('/admin/invoices/{id}/payments/{pid}/sync', [PayController::class, 'adm
 $r->get('/datenschutz', [PrivacyController::class, 'show']);
 $r->post('/anfrage', [InquiryController::class, 'submit']);
 $r->get('/health', [HealthController::class, 'ping']);
+$r->get('/admin/changelog', [ChangelogController::class, 'index']);
+$r->post('/admin/changelog/seen', [ChangelogController::class, 'seen']);
 $r->get('/admin/update', [UpdateController::class, 'index']);
 $r->post('/admin/update', [UpdateController::class, 'save']);
 $r->post('/admin/update/{action}', [UpdateController::class, 'action']);

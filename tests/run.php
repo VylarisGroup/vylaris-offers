@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 define('APP_ROOT', dirname(__DIR__));
 define('APP_DIR', APP_ROOT . '/app');
+define('APP_VERSION', preg_match("/define\('APP_VERSION', '([^']+)'\)/", (string) file_get_contents(APP_DIR . '/bootstrap.php'), $mv) ? $mv[1] : '0');
 spl_autoload_register(static function (string $class): void {
     foreach (['lib', 'services'] as $dir) {
         $f = APP_DIR . "/$dir/$class.php";
@@ -253,6 +254,24 @@ $eq('Update: Datei unverändert nach Abbruch', file_get_contents($tmpRoot . '/in
 @unlink($tmpRoot . '/index.php');
 @rmdir($tmpRoot . '/app');
 @rmdir($tmpRoot);
+
+// ---------------------------------------------------------------- Änderungsprotokoll
+$md = "# Titel\n\n## 1.5.0 – 2026-10-16\n### Neu\n- **A** neu\n- B mit `code`\n  und Fortsetzung\n### Behoben\n- C\n\n## 1.4.0 – 2026-09-01\n### Neu\n- D\n\n## 1.0.0\n- E\n";
+$cl = Changelog::parse($md);
+$eq('Changelog: 3 Versionen', count($cl), 3);
+$eq('Changelog: Version/Datum', [$cl[0]['version'], $cl[0]['date']], ['1.5.0', '2026-10-16']);
+$eq('Changelog: Abschnitte', array_keys($cl[0]['sections']), ['Neu', 'Behoben']);
+$eq('Changelog: Fortsetzungszeile', $cl[0]['sections']['Neu'][1], 'B mit `code` und Fortsetzung');
+$eq('Changelog: ohne Unterabschnitt → Neu', $cl[2]['sections']['Neu'][0], 'E');
+$eq('Changelog neu seit 1.4.0', array_column(Changelog::pending('1.4.0', $cl, '1.5.0'), 'version'), ['1.5.0']);
+$eq('Changelog neu seit 1.0.0', array_column(Changelog::pending('1.0.0', $cl, '1.5.0'), 'version'), ['1.5.0', '1.4.0']);
+$eq('Changelog aktuell → nichts', Changelog::pending('1.5.0', $cl, '1.5.0'), []);
+$eq('Changelog ohne Stand → nur aktuelle', array_column(Changelog::pending(null, $cl, '1.5.0'), 'version'), ['1.5.0']);
+$eq('Changelog: Zukunftsversion nicht anzeigen', array_column(Changelog::pending('1.0.0', $cl, '1.4.0'), 'version'), ['1.4.0']);
+$eq('Changelog: HTML maskiert', str_contains(Changelog::inline('<script>x</script> **f**'), '<script>'), false);
+$eq('Changelog: fett', str_contains(Changelog::inline('**f**'), '<strong'), true);
+$eq('Changelog: echte Datei lesbar', count(Changelog::all()) >= 1, true);
+$eq('Changelog: aktuelle Version enthalten', in_array(APP_VERSION, array_column(Changelog::all(), 'version'), true), true);
 
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

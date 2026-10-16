@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 final class Schema
 {
-    public const VERSION = 11;
+    public const VERSION = 12;
 
     public static function statements(): array
     {
@@ -33,6 +33,7 @@ final class Schema
                 updated_at DATETIME NULL,
                 sso_issuer VARCHAR(255) NULL,
                 sso_sub VARCHAR(190) NULL,
+                changelog_seen VARCHAR(20) NULL,
                 UNIQUE KEY uq_users_email (email)
             ) $t",
 
@@ -599,6 +600,7 @@ final class Schema
         $add('users', 'recovery_codes', 'TEXT NULL');
         $add('users', 'sso_issuer', 'VARCHAR(255) NULL');
         $add('users', 'sso_sub', 'VARCHAR(190) NULL');
+        $add('users', 'changelog_seen', 'VARCHAR(20) NULL');
         $add('offers', 'require_signature', 'TINYINT(1) NOT NULL DEFAULT 0');
         $add('offers', 'signature_file', 'VARCHAR(80) NULL');
         $add('api_tokens', 'scopes', "VARCHAR(100) NOT NULL DEFAULT ''");

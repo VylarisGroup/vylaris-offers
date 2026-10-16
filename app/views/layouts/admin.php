@@ -106,7 +106,7 @@ $brandLogo = Brand::logoUrl();
     </div>
   </div>
   <?php endif; ?>
-  <p class="shrink-0 border-t border-slate-100 px-5 py-3 text-center text-[11px] font-medium tracking-wide text-slate-400" data-powered-by><?= e(Brand::POWERED_BY) ?></p>
+  <p class="shrink-0 border-t border-slate-100 px-5 py-3 text-center text-[11px] font-medium tracking-wide text-slate-400" data-powered-by><?= e(Brand::POWERED_BY) ?> · <a href="<?= e(url('admin/changelog')) ?>" class="hover:text-slate-600" data-tip="Änderungsprotokoll">v<?= e(APP_VERSION) ?></a></p>
 </aside>
 
 <div class="lg:pl-72">
@@ -130,6 +130,7 @@ $brandLogo = Brand::logoUrl();
 
 <?php include APP_DIR . '/views/partials/flash.php'; ?>
 <?php include APP_DIR . '/views/partials/confirm-modal.php'; ?>
+<?php if (empty($noChangelog)) include APP_DIR . '/views/partials/changelog-modal.php'; ?>
 <script src="<?= e(asset('js/app.js')) ?>" defer></script>
 <?php if (!empty($scripts)) foreach ((array) $scripts as $s): ?><script src="<?= e(asset($s)) ?>" defer></script><?php endforeach; ?>
 </body>

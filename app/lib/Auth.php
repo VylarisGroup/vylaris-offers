@@ -28,7 +28,7 @@ final class Auth
             self::logoutUser();
             return null;
         }
-        $u = DB::one('SELECT id, name, email, role, active FROM users WHERE id = ?', [$id]);
+        $u = DB::one('SELECT id, name, email, role, active, changelog_seen FROM users WHERE id = ?', [$id]);
         if (!$u || !$u['active']) {
             self::logoutUser();
             return null;

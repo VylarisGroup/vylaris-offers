@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 define('APP_ROOT', __DIR__);
 define('APP_DIR', __DIR__ . '/app');
-define('APP_VERSION', '1.5.0');
+define('APP_VERSION', '1.5.1');
 
 $configFile = APP_DIR . '/config.php';
 $lockFile = APP_ROOT . '/storage/install.lock';
@@ -567,7 +567,7 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($existing) {
                         DB::update('users', ['name' => $cfg['admin']['name'], 'password_hash' => $cfg['admin']['hash'], 'role' => 'admin', 'active' => 1, 'updated_at' => now()], 'id = :id', [':id' => $existing]);
                     } else {
-                        DB::insert('users', ['name' => $cfg['admin']['name'], 'email' => $cfg['admin']['email'], 'password_hash' => $cfg['admin']['hash'], 'role' => 'admin', 'active' => 1, 'created_at' => now()]);
+                        DB::insert('users', ['name' => $cfg['admin']['name'], 'email' => $cfg['admin']['email'], 'password_hash' => $cfg['admin']['hash'], 'role' => 'admin', 'active' => 1, 'changelog_seen' => APP_VERSION, 'created_at' => now()]);
                     }
                 });
 
@@ -587,7 +587,7 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $invites = [];
                 foreach ($cfg['team'] ?? [] as $m) {
                     try {
-                        $uid = DB::insert('users', ['name' => $m['name'], 'email' => $m['email'], 'password_hash' => Auth::hashPassword(bin2hex(random_bytes(24))), 'role' => $m['role'], 'active' => 1, 'created_at' => now()]);
+                        $uid = DB::insert('users', ['name' => $m['name'], 'email' => $m['email'], 'password_hash' => Auth::hashPassword(bin2hex(random_bytes(24))), 'role' => $m['role'], 'active' => 1, 'changelog_seen' => APP_VERSION, 'created_at' => now()]);
                         $row = ['name' => $m['name'], 'email' => $m['email'], 'status' => 'angelegt'];
                         if (($cfg['invite'] ?? '0') === '1' && ($cfg['mail']['mail_transport'] ?? 'smtp') !== 'log') {
                             $u = ['id' => $uid, 'name' => $m['name'], 'email' => $m['email']];

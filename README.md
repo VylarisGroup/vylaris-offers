@@ -1,6 +1,6 @@
 # VylarisOffers – Offerten- & Auftragsmanagement
 
-**Version 1.5.0** – Neu in 1.5.0: Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
+**Version 1.5.1** – Neu in 1.5.x: Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
 
 PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand – **ausgelegt auf die Schweiz** (MWST, QR-Rechnung, CHF). Ohne Framework, ohne Composer, ohne Build-Schritt – läuft auf jedem Shared Hosting mit Plesk.
 
@@ -476,7 +476,7 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 - *Administration → E-Mail-Protokoll* – jeder Versand mit Fehlermeldung des Servers
 - *Administration → Audit-Log* – sicherheitsrelevante Ereignisse
 
-**Update** – neue Dateien hochladen, dabei `app/config.php` und `storage/` **nicht überschreiben**. `setup.php` nicht erneut hochladen. Neue Tabellen und Spalten (Rechnungen, Abos, Anhänge, 2FA, Unterschrift, Audit-Log, API/Webhooks, Datenschutz, Online-Zahlungen, Passkeys, Zuständigkeiten, SSO-Verknüpfung – aktuell Schema-Version 11). Programm-Updates können auch aus GitHub bezogen werden (Abschnitt 13) werden beim ersten Seitenaufruf automatisch angelegt (`schema_version`).
+**Update** – neue Dateien hochladen, dabei `app/config.php` und `storage/` **nicht überschreiben**. `setup.php` nicht erneut hochladen. Neue Tabellen und Spalten (Rechnungen, Abos, Anhänge, 2FA, Unterschrift, Audit-Log, API/Webhooks, Datenschutz, Online-Zahlungen, Passkeys, Zuständigkeiten, SSO-Verknüpfung – aktuell Schema-Version 12). Programm-Updates können auch aus GitHub bezogen werden (Abschnitt 13). Neue Tabellen und Spalten werden beim ersten Seitenaufruf automatisch angelegt (`schema_version`).
 
 **Neuinstallation** – `app/config.php` und `storage/install.lock` löschen, `setup.php` hochladen und aufrufen. Bestehende Tabellen bleiben erhalten (`CREATE TABLE IF NOT EXISTS`); existiert die Admin-E-Mail bereits, wird deren Passwort neu gesetzt.
 
@@ -620,3 +620,9 @@ Das Token wird nur an GitHub gesendet, nie an Weiterleitungsziele.
 **Voraussetzungen**: PHP-Erweiterungen `zip` und `curl`; der PHP-Benutzer muss die Programmverzeichnisse beschreiben dürfen (bei Plesk meist der Fall; sonst Dateirechte des Abonnements prüfen).
 
 **Sicherheit**: Wer ins Repository bzw. Release schreiben kann, kann Programmcode einspielen. GitHub-Konto mit 2FA schützen, Token nur lesend und nur für dieses Repository. Das Archiv wird gegen Pfad-Tricks (`..`, absolute Pfade) und überdimensionierte Inhalte geprüft; das Token wird nie an Weiterleitungsziele (Download-Server) gesendet.
+
+## 14. Änderungsprotokoll
+
+Nach einem Update erscheint beim ersten Aufruf des Admin-Bereichs ein Fenster «Neuigkeiten in Version X» (pro Benutzer einmal; Feld `users.changelog_seen`). Die Historie ist jederzeit unter `/admin/changelog` erreichbar (Link bei der Versionsnummer unten in der Navigation). Neu installierte Systeme und neu angelegte Benutzer sehen kein Fenster.
+
+Quelle ist `CHANGELOG.md` im Hauptordner: pro Version ein Abschnitt `## <Version> – <Datum>` mit `### Neu`, `### Verbessert`, `### Behoben` oder `### Hinweis` und Aufzählungspunkten (`**fett**`, `` `Code` ``). **Bei jedem Release muss `APP_VERSION` (in `app/bootstrap.php` und `setup.php`) erhöht und ein Eintrag oben in `CHANGELOG.md` ergänzt werden** – ein Test prüft, dass die aktuelle Version im Protokoll steht.

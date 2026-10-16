@@ -1,6 +1,6 @@
 # VylarisOffers – Styleguide & Designentscheide
 
-Dieses Dokument beschreibt, **wie die Oberfläche gestaltet ist**, **welche Bibliotheken** dafür verwendet werden und **warum** wichtige Entscheidungen so getroffen wurden. Es richtet sich an alle, die das System weiterentwickeln oder das Erscheinungsbild anpassen. Stand: Version 1.5.0.
+Dieses Dokument beschreibt, **wie die Oberfläche gestaltet ist**, **welche Bibliotheken** dafür verwendet werden und **warum** wichtige Entscheidungen so getroffen wurden. Es richtet sich an alle, die das System weiterentwickeln oder das Erscheinungsbild anpassen. Stand: Version 1.5.1.
 
 > Hinweis: `.md`-Dateien werden vom Webserver nicht ausgeliefert (`.htaccess`). Das Dokument ist nur für Entwickler im Dateisystem bzw. im Repository gedacht.
 
@@ -483,3 +483,7 @@ Gestaltungsregeln:
 | `app/services/SiteBuilder.php` | Bausteine und Felder der Startseite |
 | `app/services/Brand.php` | Logo, Favicon, Markenname |
 | `app/vendor/fpdf`, `app/vendor/chillerlan` | PDF- und QR-Bibliotheken |
+
+## Anhang: Änderungsprotokoll-Fenster
+
+Das Fenster «Neuigkeiten in Version X» (`partials/changelog-modal.php`) nutzt das normale Modal-System (`appModal`), öffnet sich 350 ms nach dem Laden und markiert die Version sofort per `fetch` als gesehen (einmal pro Version). Einträge werden von `partials/changelog-entries.php` gerendert: pro Abschnitt ein Icon mit Farbton (Neu = grün, Verbessert = blau, Behoben = gelb, Hinweis = rot). Text wird escaped; nur `**fett**` und `` `code` `` sind erlaubt.
