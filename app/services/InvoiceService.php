@@ -544,15 +544,17 @@ final class InvoiceService
 
         $dedSum = Calc::r2((float) array_sum(array_column($deductions, 'total')));
         $amountDue = max(0.0, Calc::r2((float) $t['total'] - $dedSum));
+        $tplId = DocTemplate::validId('invoice', $offer['template_id'] ?? null);
         $id = DB::insert('invoices', [
+            'template_id'       => $tplId,
             'public_id'         => $publicId,
             'number'            => Counter::invoiceNumber(),
             'order_id'          => (int) $order['id'],
             'customer_id'       => (int) $locked['customer_id'],
             'area_type'         => $offer['area_type'],
             'title'             => mb_substr($head['title'], 0, 190),
-            'intro'             => Settings::get('invoice_intro') ?: null,
-            'footer'            => Settings::get('invoice_footer') ?: null,
+            'intro'             => DocTemplate::textFor('invoice', $tplId, 'intro') ?? (Settings::get('invoice_intro') ?: null),
+            'footer'            => DocTemplate::textFor('invoice', $tplId, 'closing') ?? (Settings::get('invoice_footer') ?: null),
             'payment_info'      => Settings::get('invoice_payment_info') ?: null,
             'currency'          => $offer['currency'],
             'status'            => 'draft',
@@ -621,6 +623,7 @@ final class InvoiceService
             'intro'        => mb_substr(trim((string) ($in['intro'] ?? '')), 0, 5000) ?: null,
             'footer'       => mb_substr(trim((string) ($in['footer'] ?? '')), 0, 5000) ?: null,
             'payment_info' => mb_substr(trim((string) ($in['payment_info'] ?? '')), 0, 5000) ?: null,
+            'template_id'  => DocTemplate::validId('invoice', $in['template_id'] ?? null),
             'service_period' => mb_substr(trim((string) ($in['service_period'] ?? '')), 0, 120) ?: null,
             'updated_at'   => now(),
         ], 'id = :id', [':id' => $inv['id']]);

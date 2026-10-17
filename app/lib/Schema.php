@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 final class Schema
 {
-    public const VERSION = 12;
+    public const VERSION = 13;
 
     public static function statements(): array
     {
@@ -154,6 +154,7 @@ final class Schema
                 product_area_id INT UNSIGNED NULL,
                 area_type ENUM('digital','physical') NOT NULL DEFAULT 'digital',
                 title VARCHAR(190) NOT NULL,
+                template_id INT UNSIGNED NULL,
                 intro TEXT NULL,
                 footer TEXT NULL,
                 currency CHAR(3) NOT NULL,
@@ -306,6 +307,7 @@ final class Schema
                 number VARCHAR(30) NOT NULL,
                 order_id INT UNSIGNED NOT NULL,
                 customer_id INT UNSIGNED NOT NULL,
+                template_id INT UNSIGNED NULL,
                 area_type ENUM('digital','physical') NOT NULL DEFAULT 'digital',
                 title VARCHAR(190) NOT NULL,
                 intro TEXT NULL,
@@ -386,6 +388,7 @@ final class Schema
                 mime VARCHAR(120) NOT NULL,
                 size INT UNSIGNED NOT NULL,
                 customer_visible TINYINT(1) NOT NULL DEFAULT 0,
+                by_customer TINYINT(1) NOT NULL DEFAULT 0,
                 uploaded_by INT UNSIGNED NULL,
                 created_at DATETIME NOT NULL,
                 UNIQUE KEY uq_att_name (stored_name),
@@ -571,6 +574,33 @@ final class Schema
                 KEY idx_inv_items (invoice_id, position),
                 CONSTRAINT fk_inv_item FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
             ) $t",
+
+            "CREATE TABLE IF NOT EXISTS doc_templates (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(120) NOT NULL,
+                doc_type ENUM('all','offer','invoice') NOT NULL DEFAULT 'all',
+                is_default_offer TINYINT(1) NOT NULL DEFAULT 0,
+                is_default_invoice TINYINT(1) NOT NULL DEFAULT 0,
+                config LONGTEXT NULL,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NULL
+            ) $t",
+
+            "CREATE TABLE IF NOT EXISTS portal_messages (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                customer_id INT UNSIGNED NOT NULL,
+                entity_type ENUM('general','offer','order','invoice') NOT NULL DEFAULT 'general',
+                entity_id INT UNSIGNED NULL,
+                direction ENUM('in','out') NOT NULL,
+                user_id INT UNSIGNED NULL,
+                author VARCHAR(190) NOT NULL,
+                body TEXT NOT NULL,
+                read_at DATETIME NULL,
+                created_at DATETIME NOT NULL,
+                KEY idx_pm_customer (customer_id, created_at),
+                KEY idx_pm_unread (direction, read_at),
+                KEY idx_pm_entity (entity_type, entity_id)
+            ) $t",
         ];
     }
 
@@ -660,6 +690,11 @@ final class Schema
         if ($col && !str_contains((string) $col['Type'], "'invoice'")) {
             $pdo->exec("ALTER TABLE status_history MODIFY entity_type ENUM('offer','order','invoice') NOT NULL");
         }
+        // v13: Dokumentvorlagen, Portal-Nachrichten/-Uploads
+        $add('offers', 'template_id', 'INT UNSIGNED NULL');
+        $add('invoices', 'template_id', 'INT UNSIGNED NULL');
+        $add('attachments', 'by_customer', 'TINYINT(1) NOT NULL DEFAULT 0');
+        DocTemplate::seed($pdo);
         $st = $pdo->prepare('INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)');
         $st->execute(['schema_version', (string) self::VERSION]);
     }
@@ -709,6 +744,7 @@ final class Schema
             $pdo->exec("UPDATE tax_templates SET valid_from = '2024-01-01' WHERE rate > 0");   // Sätze gelten seit 1.1.2024
         }
         self::ensureTaxClasses($pdo);
+        DocTemplate::seed($pdo);
 
         if (!(int) $pdo->query('SELECT COUNT(*) FROM shipping_methods')->fetchColumn()) {
             $st = $pdo->prepare('INSERT INTO shipping_methods (name, description, cost, sort) VALUES (?,?,?,?)');

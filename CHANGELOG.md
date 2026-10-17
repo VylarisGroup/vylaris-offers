@@ -2,6 +2,21 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 1.7.0 – 2026-10-17
+
+### Neu
+- **Dokumentvorlagen:** Das PDF-Layout von Offerten und Rechnungen ist jetzt einstellbar – Akzentfarbe, Schrift und Schriftgrösse, Seitenrand, Logo (Position und Grösse), Firmenangaben, Tabellenstil, Gesamtbetrag-Feld, Fusszeile mit Platzhaltern und Seitenzahlen. Unter *Katalog → Dokumentvorlagen* mit **Live-Vorschau** (Beispieldaten). Drei Vorlagen sind mitgeliefert (Standard, Elegant, Kompakt); je Offerten und Rechnungen lässt sich eine Standardvorlage festlegen. Gewählt wird die Vorlage in der Offerte (Abschnitt «Texte») bzw. im Rechnungsentwurf. Vorlagen können auch eigene Standardtexte für Einleitung und Schluss mitbringen.
+- **PWA:** Administration und Kundenportal lassen sich als App installieren (Smartphone, Tablet, Desktop) – mit eigenem Symbol aus Logo und Markenfarbe, Vollbild und Offline-Hinweisseite. Es werden nur Design-Dateien zwischengespeichert, nie Dokumente oder Kundendaten. Ein- und ausschaltbar sowie Kurzname unter *Einstellungen → Branding*.
+- **Kundenportal erweitert:** *Nachrichten* (Kunden schreiben dem Team, optional mit Bezug auf Offerte, Auftrag oder Rechnung; Antworten des Teams mit E-Mail-Hinweis), *Dokumente* (alle Offerten-/Rechnungs-PDFs und freigegebenen Dateien an einem Ort, Datei-Upload zu Aufträgen), *Meine Angaben* (Kunden pflegen Adresse und Telefon selbst). Im Admin-Bereich gibt es dazu den Posteingang *Kunden → Nachrichten* mit Zähler.
+
+### Verbessert
+- Vom Kunden hochgeladene Dateien sind bei den Anhängen des Auftrags gekennzeichnet; das Team wird per E-Mail benachrichtigt.
+- Datenschutz: Nachrichten sind im Datenexport enthalten und werden beim Einschränken, Anonymisieren und Löschen eines Kunden entfernt.
+
+### Hinweis
+- Schema-Version 13 (Tabellen `doc_templates`, `portal_messages`; Spalten `template_id` und `by_customer`) – wird beim ersten Aufruf automatisch angelegt.
+- Der Zahlteil der QR-Rechnung bleibt wegen der Schweizer Vorgaben unabhängig von der Vorlage unverändert.
+
 ## 1.6.1 – 2026-10-16
 
 ### Behoben

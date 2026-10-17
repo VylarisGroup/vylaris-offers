@@ -163,6 +163,8 @@ final class SettingsController
         $values = [
             'brand_name' => mb_substr(trim(input_str('brand_name', 60)), 0, 60),
             'brand_tagline' => mb_substr(trim(input_str('brand_tagline', 60)), 0, 60),
+            'pwa_enabled' => !empty($_POST['pwa_enabled']) ? '1' : '0',
+            'pwa_short_name' => mb_substr(trim(input_str('pwa_short_name', 24)), 0, 24),
         ];
         $color = trim(input_str('brand_color', 7));
         $errors = [];

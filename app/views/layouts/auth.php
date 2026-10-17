@@ -1,5 +1,6 @@
 <?php $siteName = Brand::name(); $brandLogo = Brand::logoUrl(); ?><!doctype html>
 <html lang="de" class="h-full bg-slate-50 antialiased">
+<?php $pwaApp = 'admin'; ?>
 <head><?php include APP_DIR . '/views/partials/head.php'; ?><meta name="robots" content="noindex, nofollow"></head>
 <body class="min-h-full font-sans text-slate-800">
 <div class="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
@@ -19,6 +20,7 @@
 </div>
 <?php include APP_DIR . '/views/partials/flash.php'; ?>
 <script src="<?= e(asset('js/app.js')) ?>" defer></script>
+<?php if (Pwa::enabled()): ?><script src="<?= e(asset('js/pwa.js')) ?>" defer></script><?php endif; ?>
 <?php if (!empty($scripts)) foreach ((array) $scripts as $s): ?><script src="<?= e(asset($s)) ?>" defer></script><?php endforeach; ?>
 </body>
 </html>

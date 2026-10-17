@@ -1,6 +1,6 @@
 # VylarisOffers – Offerten- & Auftragsmanagement
 
-**Version 1.6.1** – Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
+**Version 1.7.0** – Neu in 1.7: Dokumentvorlagen (PDF-Layout), PWA, erweitertes Kundenportal. Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
 
 PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand – **ausgelegt auf die Schweiz** (MWST, QR-Rechnung, CHF). Ohne Framework, ohne Composer, ohne Build-Schritt – läuft auf jedem Shared Hosting mit Plesk.
 
@@ -476,7 +476,7 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 - *Administration → E-Mail-Protokoll* – jeder Versand mit Fehlermeldung des Servers
 - *Administration → Audit-Log* – sicherheitsrelevante Ereignisse
 
-**Update** – neue Dateien hochladen, dabei `app/config.php` und `storage/` **nicht überschreiben**. `setup.php` nicht erneut hochladen. Neue Tabellen und Spalten (Rechnungen, Abos, Anhänge, 2FA, Unterschrift, Audit-Log, API/Webhooks, Datenschutz, Online-Zahlungen, Passkeys, Zuständigkeiten, SSO-Verknüpfung – aktuell Schema-Version 12). Programm-Updates können auch aus GitHub bezogen werden (Abschnitt 13). Neue Tabellen und Spalten werden beim ersten Seitenaufruf automatisch angelegt (`schema_version`).
+**Update** – neue Dateien hochladen, dabei `app/config.php` und `storage/` **nicht überschreiben**. `setup.php` nicht erneut hochladen. Neue Tabellen und Spalten (Rechnungen, Abos, Anhänge, 2FA, Unterschrift, Audit-Log, API/Webhooks, Datenschutz, Online-Zahlungen, Passkeys, Zuständigkeiten, SSO-Verknüpfung, Dokumentvorlagen, Portal-Nachrichten – aktuell Schema-Version 13). Programm-Updates können auch aus GitHub bezogen werden (Abschnitt 13). Neue Tabellen und Spalten werden beim ersten Seitenaufruf automatisch angelegt (`schema_version`).
 
 **Neuinstallation** – `app/config.php` und `storage/install.lock` löschen, `setup.php` hochladen und aufrufen. Bestehende Tabellen bleiben erhalten (`CREATE TABLE IF NOT EXISTS`); existiert die Admin-E-Mail bereits, wird deren Passwort neu gesetzt.
 
@@ -632,3 +632,32 @@ Quelle ist `CHANGELOG.md` im Hauptordner: pro Version ein Abschnitt `## <Version
 **Seitenleiste.** Die Navigation ist in ausklappbare Gruppen gegliedert: *Verkauf* (Offerten, Aufträge, Rechnungen, Abos), *Kunden* (Anfragen, Kunden), *Katalog*, *Verwaltung* (Berichte, Benutzer, Webseite, Integrationen; nur Administratoren) und *System* (Einstellungen, Update, Lizenz, Systemstatus, E-Mail-Protokoll, Audit-Log; nur Administratoren). Die Gruppe der aktuellen Seite ist immer offen; sonst gilt die zuletzt gewählte Einstellung (pro Browser gemerkt, `localStorage`), standardmässig sind *Verkauf* und *Kunden* offen. Zugeklappte Gruppen zeigen offene Hinweise (neue Aufträge, überfällige Rechnungen …) als Zähler. Neben «Neue Offerte» öffnet der Pfeil ein Schnellmenü.
 
 **Assistenten.** Formulare für Kunde, Offerte, Benutzer, Produktbereich, Positionsvorlage, Steuervorlage und Versandart haben oben einen Umschalter **Formular | Assistent**. Der Assistent führt Schritt für Schritt durch dieselben Felder (Fortschrittsanzeige, Prüfung der Pflichtfelder pro Schritt, bei Offerten zusätzlich «mindestens eine Position», Zusammenfassung zum Schluss). Das normale Formular bleibt der Standard und unverändert nutzbar; der Assistent sendet an dieselbe Adresse. Direktlinks: `…/admin/offers/new?wizard=1`, `…/admin/customers/new?wizard=1`. Bei Fehlern springt der Assistent zum betroffenen Schritt. Technisch: `assets/js/wizard.js` – Formulare werden mit `data-wizard` (eigene Schritte via `data-step`) oder `data-wizard="auto"` (eine Frage pro Schritt) markiert; Details im Kopf der Datei und in `style.md`.
+
+## 16. Dokumentvorlagen
+
+*Katalog → Dokumentvorlagen* (nur Administratoren) steuert das **Aussehen** der PDF-Dokumente. Beträge, Texte und Steuerlogik bleiben unberührt.
+
+- **Einstellbar:** Akzentfarbe (leer = Markenfarbe), Schrift (Helvetica, Times, Courier) und Schriftgrösse (90–110 %), Seitenrand (15–25 mm), Logo ein/aus mit Position (links/rechts) und Höhe, Firmenangaben (Name und Adresse / nur Name / ausblenden), Zusatzzeile im Kopf, Tabellenstil (gefüllte Kopfzeile, Linie, minimal), Gesamtbetrag (helles oder farbiges Feld), Fusszeile mit Platzhaltern `{firma}` `{nummer}` `{uid}` `{datum}` und Seitenzahlen, optionale Standardtexte für Einleitung und Schluss.
+- **Live-Vorschau** mit Beispieldaten im Editor (Umschalter Offerte/Rechnung). Das Logo stammt aus *Einstellungen → Branding*.
+- **Zuordnung:** Pro Dokumenttyp gibt es eine Standardvorlage («Standard für Offerten/Rechnungen» im Menü der Karte). In der Offerte wählen Sie die Vorlage unter «Texte»; die Rechnung übernimmt sie und lässt sich im Entwurf umstellen. Wird eine Vorlage gelöscht, verwenden betroffene Dokumente die Standardvorlage; die letzte Vorlage kann nicht gelöscht werden.
+- Der **QR-Zahlteil** der Rechnung folgt den Schweizer Vorgaben und bleibt immer unverändert.
+- Beim Versand und im öffentlichen Link gilt dieselbe Vorlage wie in der Vorschau – bereits versendete Dokumente ändern ihr Aussehen, wenn die Vorlage später angepasst wird.
+
+## 17. App (PWA)
+
+Administration (`/admin`) und Kundenportal (`/portal`) sind installierbare Web-Apps: eigenes Symbol (aus Logo und Markenfarbe), Vollbild ohne Browserleiste, Hinweisseite bei fehlender Verbindung. Der Browser bietet die Installation an (Schaltfläche «App installieren» in der Seitenleiste bzw. im Portal; unter iOS: Teilen → Zum Home-Bildschirm).
+
+- **Voraussetzung:** HTTPS (ausser `localhost`).
+- **Datenschutz:** Der Service Worker (`/sw.js`) speichert nur statische Dateien (`assets/`) und das Symbol. Seiten, Dokumente und Kundendaten werden **nie** zwischengespeichert; offline erscheint eine Hinweisseite.
+- **Einstellungen:** *Einstellungen → Branding → App (PWA)*: aktivieren/deaktivieren, Kurzname (max. 24 Zeichen). Beim Deaktivieren meldet sich der Service Worker ab und leert den Cache.
+- Das Symbol benötigt die PHP-Erweiterung GD (Standard bei Plesk).
+
+## 18. Kundenportal: Nachrichten, Dokumente, Angaben
+
+Kunden (Anmeldung per Link) sehen im Portal zusätzlich:
+
+- **Nachrichten:** Unterhaltung mit dem Team, optional mit Bezug auf eine Offerte, einen Auftrag oder eine Rechnung. Neue Kundennachrichten gehen per E-Mail an die Team-Adresse (und die zuständige Person) und erscheinen im Posteingang *Kunden → Nachrichten* (Zähler in der Navigation). Antworten des Teams erscheinen im Portal; der Kunde erhält nur einen E-Mail-Hinweis ohne Inhalt. Limit: 15 Nachrichten pro Stunde und Kunde.
+- **Dokumente:** Download-Center mit allen Offerten- und Rechnungs-PDFs sowie den für Kunden freigegebenen Dateien. Kunden können Dateien zu **ihren Aufträgen hochladen** (gleiche Dateitypen und Grössen wie Team-Anhänge, max. 20 Uploads pro Stunde); sie erscheinen beim Auftrag mit dem Vermerk «vom Kunden hochgeladen», das Team erhält eine E-Mail. Eigene Uploads kann der Kunde wieder löschen.
+- **Meine Angaben:** Anrede, Name, Firma, Adresse und Telefon selbst pflegen. E-Mail-Adresse und Steuerangaben ändert nur das Team. Änderungen gelten für künftige Dokumente und werden im Audit-Log festgehalten.
+
+**Datenschutz:** Nachrichten sind im Datenexport (Auskunft) enthalten und werden beim Einschränken, Anonymisieren oder Löschen eines Kunden entfernt.

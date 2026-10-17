@@ -92,6 +92,7 @@ final class CustomerController
             redirect('admin/customers/' . $customer['id']);
         }
         DB::exec("DELETE FROM login_tokens WHERE subject_type = 'customer' AND subject_id = ?", [$customer['id']]);
+        DB::exec('DELETE FROM portal_messages WHERE customer_id = ?', [$customer['id']]);
         DB::exec('DELETE FROM customers WHERE id = ?', [$customer['id']]);
         Audit::log('customer_deleted', null, 'customer', (int) $customer['id']);
         flash('success', 'Der Kunde wurde gelöscht.');

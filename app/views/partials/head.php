@@ -11,6 +11,15 @@ $favicon = Brand::faviconUrl();
 <meta name="base-url" content="<?= e(rtrim(url(''), '/')) ?>">
 <title><?= e($pageTitle) ?></title>
 <?php if ($favicon !== ''): ?><link rel="icon" href="<?= e($favicon) ?>"><?php else: ?><link rel="icon" href="data:image/svg+xml,<?= rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="' . $brand . '"/><path d="M10 11h12M10 16h12M10 21h7" stroke="white" stroke-width="2.6" stroke-linecap="round"/></svg>') ?>"><?php endif; ?>
+<?php if (!empty($pwaApp) && Pwa::enabled()): ?>
+<link rel="manifest" href="<?= e(url($pwaApp === 'portal' ? 'portal.webmanifest' : 'manifest.webmanifest')) ?>">
+<meta name="theme-color" content="<?= e($brand) ?>">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="<?= e(Pwa::shortName($pwaApp)) ?>">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="<?= e(url('pwa/icon/180')) ?>?v=<?= e(Pwa::iconVersion()) ?>">
+<meta name="pwa-sw" content="<?= e(url('sw.js')) ?>" data-scope="<?= e(url($pwaApp === 'portal' ? 'portal/' : 'admin/')) ?>">
+<?php endif; ?>
 <link rel="stylesheet" href="<?= e(url('assets/vendor/inter/inter.css')) ?>">
 <link rel="stylesheet" href="<?= e(url('assets/vendor/boxicons/css/boxicons.min.css')) ?>">
 <link rel="preload" href="<?= e(url('assets/vendor/inter/inter-latin-wght-normal.woff2')) ?>" as="font" type="font/woff2" crossorigin>

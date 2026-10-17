@@ -10,6 +10,22 @@ final class PdfDoc extends FPDF
 {
     public string $footerLeft = '';
     public bool $hideFooter = false;
+    /** Dokumentvorlage: Schriftfamilie (null = Helvetica wie im Standard), Schriftgrösse-Faktor, Seitenzahlen. */
+    public ?string $tplFont = null;
+    public float $tplScale = 1.0;
+    public bool $pageNumbers = true;
+
+    /** Wendet die Schrift der Dokumentvorlage an (Helvetica wird ersetzt, Courier bleibt). */
+    public function SetFont($family, $style = '', $size = 0): void
+    {
+        if ($this->tplFont !== null && strtolower((string) $family) === 'helvetica') {
+            $family = $this->tplFont;
+        }
+        if ($this->tplScale !== 1.0 && $size > 0) {
+            $size = round($size * $this->tplScale, 2);
+        }
+        parent::SetFont($family, $style, $size);
+    }
 
     public function Footer(): void
     {
@@ -20,8 +36,10 @@ final class PdfDoc extends FPDF
         $this->SetFont('Helvetica', '', 7.5);
         $this->SetTextColor(130, 140, 155);
         $this->Cell(0, 4, PdfService::t($this->footerLeft), 0, 0, 'L');
-        $this->SetX(-40);
-        $this->Cell(20, 4, PdfService::t('Seite ' . $this->PageNo() . '/{nb}'), 0, 0, 'R');
+        if ($this->pageNumbers) {
+            $this->SetX(-40);
+            $this->Cell(20, 4, PdfService::t('Seite ' . $this->PageNo() . '/{nb}'), 0, 0, 'R');
+        }
     }
 
     public function SetDash($black = null, $white = null): void
@@ -52,7 +70,9 @@ final class PdfDoc extends FPDF
 
 final class PdfService
 {
-    private const MARGIN = 20.0;
+    private static float $margin = 20.0;
+    /** Vorschau: überschreibt die Vorlagenkonfiguration (nicht gespeichert). */
+    public static ?array $forceConfig = null;
 
     /** UTF-8 → Windows-1252 für die Standardschriften. */
     public static function t(?string $s): string
@@ -111,6 +131,7 @@ final class PdfService
     /** Zahlungsbestätigung (Quittung) für eine bezahlte Rechnung. */
     public static function receipt(array $i, ?int $ledgerId = null): string
     {
+        self::$margin = 20.0;
         $row = null;
         $cum = 0.0;
         $cumAt = 0.0;
@@ -124,10 +145,10 @@ final class PdfService
         $pay = $row ? PaymentService::providerPayment($row['provider_payment_id'] ? (int) $row['provider_payment_id'] : null) : PaymentService::paidPayment((int) $i['id']);
         $rowAmount = $row ? (float) $row['amount'] : (float) $i['amount_due'];
         $remainingAfter = max(0.0, Calc::r2((float) $i['amount_due'] - ($row ? $cumAt : (float) $i['amount_due'])));
-        $W = 210 - 2 * self::MARGIN;
+        $W = 210 - 2 * self::$margin;
         $brand = self::rgb((string) Settings::get('brand_color', '#4f46e5'));
         $pdf = new PdfDoc('P', 'mm', 'A4');
-        $pdf->SetMargins(self::MARGIN, 15, self::MARGIN);
+        $pdf->SetMargins(self::$margin, 15, self::$margin);
         $pdf->SetAutoPageBreak(true, 20);
         $pdf->AliasNbPages();
         $pdf->SetTitle(self::t('Zahlungsbestätigung ' . $i['number']), false);
@@ -137,7 +158,7 @@ final class PdfService
         $pdf->AddPage();
         $pdf->SetFont('Helvetica', 'B', 13);
         $pdf->SetTextColor(15, 23, 42);
-        $pdf->SetXY(self::MARGIN, 15);
+        $pdf->SetXY(self::$margin, 15);
         $pdf->Cell(95, 6, self::t((string) Settings::get('company_name')), 0, 2);
         $pdf->SetFont('Helvetica', '', 9);
         $pdf->SetTextColor(90, 100, 115);
@@ -153,9 +174,9 @@ final class PdfService
         $pdf->Cell(80, 8, self::t($i['number']), 0, 2, 'R');
         $pdf->SetDrawColor(...$brand);
         $pdf->SetLineWidth(0.6);
-        $pdf->Line(self::MARGIN, 45, 210 - self::MARGIN, 45);
+        $pdf->Line(self::$margin, 45, 210 - self::$margin, 45);
 
-        $pdf->SetXY(self::MARGIN, 52);
+        $pdf->SetXY(self::$margin, 52);
         $pdf->SetFont('Helvetica', 'B', 7.5);
         $pdf->SetTextColor(130, 140, 155);
         $pdf->Cell(80, 4, self::t('ZAHLUNG VON'), 0, 2);
@@ -169,8 +190,8 @@ final class PdfService
         // Betragsfeld
         $y = $pdf->GetY();
         $pdf->SetFillColor(...self::tint($brand));
-        $pdf->Rect(self::MARGIN, $y, $W, 26, 'F');
-        $pdf->SetXY(self::MARGIN + 6, $y + 4);
+        $pdf->Rect(self::$margin, $y, $W, 26, 'F');
+        $pdf->SetXY(self::$margin + 6, $y + 4);
         $pdf->SetFont('Helvetica', 'B', 8);
         $pdf->SetTextColor(...$brand);
         $pdf->Cell(80, 4, self::t('BEZAHLTER BETRAG'), 0, 2);
@@ -207,7 +228,7 @@ final class PdfService
         }
         $pdf->SetFont('Helvetica', '', 10);
         foreach ($rows as $k => $v) {
-            $pdf->SetX(self::MARGIN);
+            $pdf->SetX(self::$margin);
             $pdf->SetTextColor(110, 120, 135);
             $pdf->Cell(48, 6.5, self::t($k), 0, 0);
             $pdf->SetTextColor(15, 23, 42);
@@ -224,29 +245,72 @@ final class PdfService
     {
         $o = $d['src'];
         $cur = $d['currency'];
+        $tpl = self::$forceConfig !== null
+            ? DocTemplate::sanitize(self::$forceConfig)
+            : DocTemplate::resolve($d['invoice'] ? 'invoice' : 'offer', isset($o['template_id']) ? (int) $o['template_id'] : null);
+        self::$margin = (float) $tpl['margin'];
         $pdf = new PdfDoc('P', 'mm', 'A4');
-        $pdf->SetMargins(self::MARGIN, 15, self::MARGIN);
+        $pdf->tplFont = $tpl['font'] === 'helvetica' ? null : $tpl['font'];
+        $pdf->tplScale = $tpl['font_scale'] / 100;
+        $pdf->pageNumbers = (bool) $tpl['page_numbers'];
+        $pdf->SetMargins(self::$margin, 15, self::$margin);
         $pdf->SetAutoPageBreak(true, 20);
         $pdf->AliasNbPages();
         $pdf->SetTitle(self::t($d['label'] . ' ' . $d['number']), false);
         $pdf->SetAuthor(self::t((string) Settings::get('company_name')), false);
         $pdf->SetCreator(self::t(Brand::name()), false);
-        $pdf->footerLeft = (string) Settings::get('company_name') . ' · ' . $d['number'];
+        $pdf->footerLeft = DocTemplate::footerLine($tpl, (string) $d['number']);
         $pdf->AddPage();
-        $W = 210 - 2 * self::MARGIN;
-        $brand = self::rgb((string) Settings::get('brand_color', '#4f46e5'));
+        $m = self::$margin;
+        $W = 210 - 2 * $m;
+        $brand = self::rgb($tpl['accent'] !== '' ? $tpl['accent'] : (string) Settings::get('brand_color', '#4f46e5'));
 
-        // Kopf: Firma links, Dokumentdaten rechts
-        $pdf->SetFont('Helvetica', 'B', 13);
-        $pdf->SetTextColor(15, 23, 42);
-        $pdf->SetXY(self::MARGIN, 15);
-        $pdf->Cell(95, 6, self::t((string) Settings::get('company_name')), 0, 2);
-        $pdf->SetFont('Helvetica', '', 9);
-        $pdf->SetTextColor(90, 100, 115);
-        foreach (array_filter([Settings::get('company_street'), trim(Settings::get('company_zip') . ' ' . Settings::get('company_city')), Settings::companyEmail(), Settings::get('company_phone'), self::uidLine()]) as $l) {
-            $pdf->Cell(95, 4.4, self::t((string) $l), 0, 2);
+        // Kopf: Firma (und Logo) links, Dokumentdaten rechts – Logo wahlweise links oder rechts
+        $logoFile = $tpl['logo'] ? self::logoFile() : null;
+        $logoH = (float) $tpl['logo_height'];
+        $leftY = 15.0;
+        $rightY = 15.0;
+        $logoW = 0.0;
+        if ($logoFile !== null) {
+            $info = @getimagesize($logoFile);
+            if ($info && $info[1] > 0) {
+                $logoW = min($logoH * $info[0] / $info[1], 70.0);
+                $lh = $logoW * $info[1] / $info[0];
+                try {
+                    if ($tpl['logo_pos'] === 'right') {
+                        $pdf->Image($logoFile, 210 - $m - $logoW, 15, $logoW, $lh);
+                        $rightY = 15 + $lh + 2.5;
+                    } else {
+                        $pdf->Image($logoFile, $m, 15, $logoW, $lh);
+                        $leftY = 15 + $lh + 2.5;
+                    }
+                } catch (Throwable) {
+                    $logoW = 0.0;
+                }
+            }
         }
-        $pdf->SetXY(110, 15);
+        $pdf->SetXY($m, $leftY);
+        if ($tpl['company_block'] !== 'none') {
+            $pdf->SetFont('Helvetica', 'B', 13);
+            $pdf->SetTextColor(15, 23, 42);
+            $pdf->Cell(95, 6, self::t((string) Settings::get('company_name')), 0, 2);
+            $pdf->SetFont('Helvetica', '', 9);
+            $pdf->SetTextColor(90, 100, 115);
+            if ($tpl['company_block'] === 'full') {
+                foreach (array_filter([Settings::get('company_street'), trim(Settings::get('company_zip') . ' ' . Settings::get('company_city')), Settings::companyEmail(), Settings::get('company_phone'), self::uidLine()]) as $l) {
+                    $pdf->Cell(95, 4.4, self::t((string) $l), 0, 2);
+                }
+            }
+        }
+        if ($tpl['header_note'] !== '') {
+            $pdf->SetFont('Helvetica', '', 8.5);
+            $pdf->SetTextColor(110, 120, 135);
+            $pdf->SetX($m);
+            $pdf->Cell(95, 4.4, self::t($tpl['header_note']), 0, 2);
+        }
+        $leftEnd = $pdf->GetY();
+        $rx = 210 - $m - 80;
+        $pdf->SetXY($rx, $rightY);
         $pdf->SetFont('Helvetica', 'B', 8);
         $pdf->SetTextColor(...$brand);
         $pdf->Cell(80, 4, self::t(mb_strtoupper($d['label'])), 0, 2, 'R');
@@ -261,12 +325,13 @@ final class PdfService
         if (!empty($d['customer']['customer_no'])) {
             $pdf->Cell(80, 4.6, self::t('Kunden-Nr.: ' . $d['customer']['customer_no']), 0, 2, 'R');
         }
+        $lineY = max(45.0, $leftEnd + 2, $pdf->GetY() + 2);
         $pdf->SetDrawColor(...$brand);
         $pdf->SetLineWidth(0.6);
-        $pdf->Line(self::MARGIN, 45, 210 - self::MARGIN, 45);
+        $pdf->Line($m, $lineY, 210 - $m, $lineY);
 
         // Adresse
-        $pdf->SetXY(self::MARGIN, 52);
+        $pdf->SetXY($m, $lineY + 7);
         $pdf->SetFont('Helvetica', 'B', 7.5);
         $pdf->SetTextColor(130, 140, 155);
         $pdf->Cell(80, 4, self::t(mb_strtoupper($d['to_label'])), 0, 2);
@@ -300,16 +365,24 @@ final class PdfService
         $pdf->Ln(4);
 
         // Positionen
-        $cols = [10, 80, 22, 28, 30];
-        $head = static function () use ($pdf, $cols, $cur): void {
+        $cols = [10, $W - 90, 22, 28, 30];
+        $style = $tpl['table_style'];
+        $head = static function () use ($pdf, $cols, $cur, $style, $brand, $m, $W): void {
             $pdf->SetFont('Helvetica', 'B', 8);
-            $pdf->SetTextColor(100, 110, 125);
+            $fill = $style === 'filled';
+            $pdf->SetTextColor(...($style === 'filled' ? [100, 110, 125] : [60, 70, 85]));
             $pdf->SetFillColor(241, 245, 249);
-            $pdf->Cell($cols[0], 7, 'Pos.', 0, 0, 'L', true);
-            $pdf->Cell($cols[1], 7, 'Bezeichnung', 0, 0, 'L', true);
-            $pdf->Cell($cols[2], 7, 'Menge', 0, 0, 'R', true);
-            $pdf->Cell($cols[3], 7, 'Preis', 0, 0, 'R', true);
-            $pdf->Cell($cols[4], 7, PdfService::t('Total ' . $cur), 0, 1, 'R', true);
+            $h = $style === 'minimal' ? 6 : 7;
+            $pdf->Cell($cols[0], $h, 'Pos.', 0, 0, 'L', $fill);
+            $pdf->Cell($cols[1], $h, 'Bezeichnung', 0, 0, 'L', $fill);
+            $pdf->Cell($cols[2], $h, 'Menge', 0, 0, 'R', $fill);
+            $pdf->Cell($cols[3], $h, 'Preis', 0, 0, 'R', $fill);
+            $pdf->Cell($cols[4], $h, PdfService::t('Total ' . $cur), 0, 1, 'R', $fill);
+            if ($style === 'lines') {
+                $pdf->SetDrawColor(...$brand);
+                $pdf->SetLineWidth(0.4);
+                $pdf->Line($m, $pdf->GetY(), $m + $W, $pdf->GetY());
+            }
         };
         $head();
         $multiTax = count(array_unique(array_map(static fn($i) => $i['tax_rate'] . '|' . $i['tax_label'], $d['items']))) > 1 && TaxService::liable();
@@ -336,19 +409,19 @@ final class PdfService
             $y = $pdf->GetY() + 1.5;
             $pdf->SetTextColor(150, 160, 175);
             $pdf->SetFont('Helvetica', '', 8.5);
-            $pdf->SetXY(self::MARGIN, $y);
+            $pdf->SetXY(self::$margin, $y);
             $pdf->Cell($cols[0], 4.8, (string) $it['position'], 0, 0);
-            $pdf->SetXY(self::MARGIN + $cols[0], $y);
+            $pdf->SetXY(self::$margin + $cols[0], $y);
             $pdf->SetFont('Helvetica', 'B', 9.5);
             $pdf->SetTextColor(15, 23, 42);
             $pdf->MultiCell($cols[1] - 2, 4.8, self::t($it['title']));
             if ($sub) {
-                $pdf->SetX(self::MARGIN + $cols[0]);
+                $pdf->SetX(self::$margin + $cols[0]);
                 $pdf->SetFont('Helvetica', '', 8.5);
                 $pdf->SetTextColor(100, 110, 125);
                 $pdf->MultiCell($cols[1] - 2, 4.1, self::t(implode("\n", $sub)));
             }
-            $x = self::MARGIN + $cols[0] + $cols[1];
+            $x = self::$margin + $cols[0] + $cols[1];
             $pdf->SetFont('Helvetica', '', 9);
             $pdf->SetTextColor(40, 50, 65);
             $pdf->SetXY($x, $y);
@@ -359,7 +432,7 @@ final class PdfService
             $pdf->SetY($y + $h - 1.5);
             $pdf->SetDrawColor(226, 232, 240);
             $pdf->SetLineWidth(0.2);
-            $pdf->Line(self::MARGIN, $pdf->GetY(), 210 - self::MARGIN, $pdf->GetY());
+            $pdf->Line(self::$margin, $pdf->GetY(), 210 - self::$margin, $pdf->GetY());
         }
 
         // Summen
@@ -388,7 +461,7 @@ final class PdfService
             $pdf->AddPage();
         }
         $pdf->Ln(3);
-        $lx = 210 - self::MARGIN - 95;
+        $lx = 210 - self::$margin - 95;
         foreach ($rows as [$l, $v, $strong]) {
             $pdf->SetX($lx);
             $pdf->SetFont('Helvetica', $strong ? 'B' : '', 9);
@@ -398,9 +471,10 @@ final class PdfService
         }
         $pdf->Ln(1.5);
         $pdf->SetX($lx);
-        $pdf->SetFillColor(...self::tint($brand));
+        $solid = $tpl['total_style'] === 'solid';
+        $pdf->SetFillColor(...($solid ? $brand : self::tint($brand)));
         $pdf->SetFont('Helvetica', 'B', 11);
-        $pdf->SetTextColor(15, 23, 42);
+        $pdf->SetTextColor(...($solid ? [255, 255, 255] : [15, 23, 42]));
         $pdf->Cell(50, 9, self::t(' Gesamtbetrag'), 0, 0, 'L', true);
         $pdf->Cell(45, 9, self::t(money($o['total'], $cur) . ' '), 0, 1, 'R', true);
 
@@ -415,8 +489,8 @@ final class PdfService
             }
             $pdf->SetX($lx);
             $pdf->SetFont('Helvetica', 'B', 11);
-            $pdf->SetTextColor(15, 23, 42);
-            $pdf->SetFillColor(...self::tint($brand));
+            $pdf->SetTextColor(...($solid ? [255, 255, 255] : [15, 23, 42]));
+            $pdf->SetFillColor(...($solid ? $brand : self::tint($brand)));
             $pdf->Cell(50, 9, self::t(' Zu zahlen'), 0, 0, 'L', true);
             $pdf->Cell(45, 9, self::t(money($o['amount_due'], $cur) . ' '), 0, 1, 'R', true);
         }
@@ -514,7 +588,7 @@ final class PdfService
             $pdf->Cell($W, 5, self::t($d['accepted']), 0, 1);
             if (!empty($d['signature'])) {
                 try {
-                    $pdf->Image($d['signature'], self::MARGIN, $pdf->GetY() + 1, 55);
+                    $pdf->Image($d['signature'], self::$margin, $pdf->GetY() + 1, 55);
                 } catch (Throwable) {
                 }
             }
@@ -529,6 +603,8 @@ final class PdfService
                 }
                 $pdf->SetAutoPageBreak(false);
                 $pdf->hideFooter = true;
+                $pdf->tplFont = null;   // Zahlteil: immer Helvetica in Originalgrösse (Schweizer Vorgabe)
+                $pdf->tplScale = 1.0;
                 self::paymentPart($pdf, $o, $payload);
             }
         }
@@ -662,6 +738,31 @@ final class PdfService
         }
     }
 
+    /** Pfad des Logos als von FPDF lesbare Datei (PNG/JPG/GIF; WebP wird umgewandelt) oder null. */
+    private static function logoFile(): ?string
+    {
+        $f = Brand::logoPath();
+        if ($f === null) {
+            return null;
+        }
+        if (str_ends_with($f, '.webp')) {
+            if (!function_exists('imagecreatefromwebp')) {
+                return null;
+            }
+            $im = @imagecreatefromwebp($f);
+            if (!$im) {
+                return null;
+            }
+            $tmp = sys_get_temp_dir() . '/vo-logo-' . md5($f . filemtime($f)) . '.png';
+            if (!is_file($tmp)) {
+                imagesavealpha($im, true);
+                imagepng($im, $tmp);
+            }
+            return is_file($tmp) ? $tmp : null;
+        }
+        return preg_match('/\.(png|jpe?g|gif)$/', $f) ? $f : null;
+    }
+
     private static function rgb(string $hex): array
     {
         $hex = ltrim($hex, '#');
@@ -674,10 +775,10 @@ final class PdfService
     }
 
     /** Sendet das PDF an den Browser. */
-    public static function send(string $pdf, string $filename): never
+    public static function send(string $pdf, string $filename, bool $inline = false): never
     {
         header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . preg_replace('/[^A-Za-z0-9._-]/', '_', $filename) . '"');
+        header('Content-Disposition: ' . ($inline ? 'inline' : 'attachment') . '; filename="' . preg_replace('/[^A-Za-z0-9._-]/', '_', $filename) . '"');
         header('Content-Length: ' . strlen($pdf));
         header('X-Content-Type-Options: nosniff');
         header('Cache-Control: private, no-store');

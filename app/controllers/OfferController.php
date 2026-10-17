@@ -55,8 +55,8 @@ final class OfferController
                 'customer_id' => input_int('customer'),
                 'inquiry_id'  => input_int('inquiry'),
                 'title'       => ($inq = input_int('inquiry') ? DB::one('SELECT subject, name FROM inquiries WHERE id = ?', [input_int('inquiry')]) : null) ? ($inq['subject'] ?: 'Anfrage von ' . $inq['name']) : '',
-                'intro'       => Settings::get('offer_intro', ''),
-                'footer'      => Settings::get('offer_footer', ''),
+                'intro'       => DocTemplate::textFor('offer', null, 'intro') ?? Settings::get('offer_intro', ''),
+                'footer'      => DocTemplate::textFor('offer', null, 'closing') ?? Settings::get('offer_footer', ''),
                 'valid_until' => $days > 0 ? date('Y-m-d', strtotime("+$days days")) : '',
                 'no_expiry'   => $days > 0 ? '' : '1',
                 'items'       => [],
@@ -194,6 +194,7 @@ final class OfferController
         if ($error) {
             flash('error', $error);
         }
-        view('admin/offers/form', compact('form', 'errors', 'from', 'copyOf', 'customers', 'customerData', 'areas', 'taxes', 'shipping', 'templates'));
+        $docTemplates = DocTemplate::forType('offer');
+        view('admin/offers/form', compact('form', 'errors', 'from', 'copyOf', 'customers', 'customerData', 'areas', 'taxes', 'shipping', 'templates', 'docTemplates'));
     }
 }

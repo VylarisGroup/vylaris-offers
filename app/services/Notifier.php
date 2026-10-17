@@ -233,6 +233,34 @@ final class Notifier
         return self::send((string) $inq['email'], 'Ihre Anfrage bei ' . $company, 'Anfrage erhalten', $body, null, null, 'inquiry_confirm', Settings::companyEmail());
     }
 
+    /** Kunde schreibt im Portal → Team-Adresse (und zuständige Person) benachrichtigen. */
+    public static function portalMessageToTeam(array $c, array $msg, ?array $ref): void
+    {
+        $body = '<p><strong>' . e(customer_name($c)) . '</strong> hat über das Kundenportal geschrieben'
+            . ($ref ? ' (' . e($ref[0]) . ')' : '') . ':</p>'
+            . '<div style="background:#f8fafc;border-radius:12px;padding:16px 18px;margin:16px 0">' . nl($msg['body']) . '</div>';
+        foreach (self::teamRecipients(0) as $to) {
+            self::send($to, 'Neue Kundennachricht von ' . customer_name($c), 'Neue Nachricht im Kundenportal', $body, url('admin/messages/' . $c['id']), 'Antworten', 'portal_message_team', $c['email'] ?: null);
+        }
+    }
+
+    /** Team antwortet → Kunde erhält einen Hinweis mit Portal-Link (Inhalt steht nur im Portal, nicht per E-Mail). */
+    public static function portalMessageToCustomer(array $c): bool
+    {
+        $body = '<p>' . self::greeting($c) . ',</p>'
+            . '<p>wir haben Ihnen im Kundenportal eine Nachricht geschrieben. Aus Datenschutzgründen steht der Inhalt nur im Portal.</p>';
+        return self::send($c['email'] ?? '', 'Neue Nachricht von ' . Settings::get('company_name'), 'Sie haben eine neue Nachricht', $body, url('portal/messages'), 'Nachricht lesen', 'portal_message_customer', Settings::companyEmail());
+    }
+
+    /** Kunde lädt im Portal eine Datei hoch. */
+    public static function portalUpload(array $c, array $order, string $fileName): void
+    {
+        $body = '<p><strong>' . e(customer_name($c)) . '</strong> hat im Kundenportal die Datei <strong>' . e($fileName) . '</strong> zum Auftrag <strong>' . e($order['number']) . '</strong> hochgeladen.</p>';
+        foreach (self::teamRecipients((int) ($order['responsible_id'] ?? 0)) as $to) {
+            self::send($to, 'Neue Datei von ' . customer_name($c), 'Datei im Kundenportal hochgeladen', $body, url('admin/orders/' . $order['id']), 'Auftrag öffnen', 'portal_upload_team');
+        }
+    }
+
     public static function portalLink(array $c, string $token): bool
     {
         $body = '<p>' . self::greeting($c) . ',</p>'

@@ -7,10 +7,11 @@ $active = static function (string $prefix, bool $exact = false) use ($path): str
 };
 $newOrders = (int) DB::val("SELECT COUNT(*) FROM orders WHERE status = 'new'");
 $newInq = InquiryService::newCount();
+$newMsgs = PortalMessage::unreadForTeam();
 $openInv = (int) DB::val("SELECT COUNT(*) FROM invoices WHERE status = 'sent' AND due_date < CURDATE()");
 $lic = License::status();
 $isAdmin = $me && $me['role'] === 'admin';
-$tips = ['admin/orders' => 'Neue Aufträge', 'admin/invoices' => 'Überfällige Rechnungen', 'admin/inquiries' => 'Neue Anfragen'];
+$tips = ['admin/orders' => 'Neue Aufträge', 'admin/invoices' => 'Überfällige Rechnungen', 'admin/inquiries' => 'Neue Anfragen', 'admin/messages' => 'Ungelesene Kundennachrichten'];
 // Einträge: [Pfad, Label, Icon, Zähler|null, Zählerfarbe]
 $groups = [
     ['sales', 'Verkauf', 'bx-store-alt', true, [
@@ -21,11 +22,13 @@ $groups = [
     ]],
     ['crm', 'Kunden', 'bx-group', true, [
         ['admin/inquiries', 'Anfragen', 'bx-envelope-open', $newInq ?: null],
+        ['admin/messages', 'Nachrichten', 'bx-message-square-dots', $newMsgs ?: null],
         ['admin/customers', 'Kunden', 'bx-user-pin', null],
     ]],
     ['catalog', 'Katalog', 'bx-category', false, [
         ['admin/areas', 'Produktbereiche', 'bx-category', null],
         ['admin/templates', 'Positionsvorlagen', 'bx-bookmarks', null],
+        ['admin/doc-templates', 'Dokumentvorlagen', 'bx-layout', null],
         ['admin/taxes', 'Steuervorlagen', 'bx-receipt', null],
         ['admin/shipping', 'Versandarten', 'bx-car', null],
     ]],
@@ -59,6 +62,7 @@ foreach ($groups as &$g) {
 }
 unset($g);
 $groups = array_values(array_filter($groups, static fn ($g) => $g[4] !== []));
+$pwaApp = 'admin';
 $siteName = Brand::name();
 $brandLogo = Brand::logoUrl();
 ?><!doctype html>
@@ -139,6 +143,7 @@ $brandLogo = Brand::logoUrl();
     </div>
   </div>
   <?php endif; ?>
+  <?php if (Pwa::enabled()): ?><button type="button" hidden data-pwa-install class="mx-4 mb-2 inline-flex items-center justify-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 ring-1 ring-brand-100 transition hover:bg-brand-100"><i class="bx bx-download text-base"></i>App installieren</button><?php endif; ?>
   <p class="shrink-0 border-t border-slate-100 px-5 py-3 text-center text-[11px] font-medium tracking-wide text-slate-400" data-powered-by><?= e(Brand::POWERED_BY) ?> · <a href="<?= e(url('admin/changelog')) ?>" class="hover:text-slate-600" data-tip="Änderungsprotokoll">v<?= e(APP_VERSION) ?></a></p>
 </aside>
 
@@ -165,6 +170,7 @@ $brandLogo = Brand::logoUrl();
 <?php include APP_DIR . '/views/partials/confirm-modal.php'; ?>
 <?php if (empty($noChangelog)) include APP_DIR . '/views/partials/changelog-modal.php'; ?>
 <script src="<?= e(asset('js/app.js')) ?>" defer></script>
+<?php if (Pwa::enabled()): ?><script src="<?= e(asset('js/pwa.js')) ?>" defer></script><?php endif; ?>
 <?php if (!empty($scripts)) foreach ((array) $scripts as $s): ?><script src="<?= e(asset($s)) ?>" defer></script><?php endforeach; ?>
 <script src="<?= e(asset('js/wizard.js')) ?>" defer></script>
 </body>

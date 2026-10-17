@@ -284,5 +284,23 @@ foreach (['users/index', 'catalog/areas', 'catalog/templates', 'catalog/taxes', 
 }
 $eq('Seitenleiste mit Gruppen', str_contains((string) file_get_contents(APP_DIR . '/views/layouts/admin.php'), 'data-nav-group'), true);
 
+// Dokumentvorlagen, PWA, Portal (ab 1.7.0)
+$c = DocTemplate::sanitize(['accent' => 'rot', 'font' => 'comic', 'font_scale' => 500, 'margin' => 1, 'logo_height' => 99, 'table_style' => 'x', 'logo_pos' => 'diag', 'company_block' => 'y']);
+$eq('Vorlage: ungültige Farbe → leer', $c['accent'], '');
+$eq('Vorlage: ungültige Schrift → helvetica', $c['font'], 'helvetica');
+$eq('Vorlage: Werte begrenzt', [$c['font_scale'], $c['margin'], $c['logo_height']], [110, 15, 30]);
+$eq('Vorlage: ungültige Auswahl → Standard', [$c['table_style'], $c['logo_pos'], $c['company_block']], ['filled', 'left', 'full']);
+$eq('Vorlage: Farbe normalisiert', DocTemplate::sanitize(['accent' => '#0D9488'])['accent'], '#0d9488');
+$pwaSrc = (string) file_get_contents(APP_DIR . '/services/Pwa.php');
+$eq('PWA: Service Worker cached keine Seiten', str_contains($pwaSrc, "req.mode === 'navigate'") && str_contains($pwaSrc, 'caches.match(OFFLINE)'), true);
+$eq('PWA: Scope und Start-URL im Manifest', str_contains($pwaSrc, "'portal/' : 'admin/'"), true);
+$eq('PWA: Symbole maskable', str_contains($pwaSrc, "'purpose' => 'maskable'"), true);
+$eq('Portal: Nachricht leer → Fehler', (function () { try { PortalMessage::add(1, 'in', '  ', 'x'); return false; } catch (ValidationException) { return true; } })(), true);
+$eq('Portal: Bezug mit Unsinn → allgemein', PortalMessage::parseRef(1, 'order:1;DROP'), ['general', null]);
+foreach (['messages', 'documents', 'profile'] as $v) {
+    $eq("Portal-Ansicht $v vorhanden", is_file(APP_DIR . "/views/portal/$v.php"), true);
+}
+$eq('Admin: Dokumentvorlagen im Menü', str_contains((string) file_get_contents(APP_DIR . '/views/layouts/admin.php'), 'admin/doc-templates'), true);
+
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

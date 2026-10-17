@@ -67,6 +67,12 @@ final class Brand
         return self::file($kind) !== null;
     }
 
+    /** Dateipfad des hochgeladenen Logos (für PDF) oder null. */
+    public static function logoPath(): ?string
+    {
+        return self::file('logo');
+    }
+
     private static function file(string $kind): ?string
     {
         $name = (string) Settings::get(self::KINDS[$kind] ?? '', '');

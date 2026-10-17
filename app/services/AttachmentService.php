@@ -31,7 +31,7 @@ final class AttachmentService
     }
 
     /** @param array $file Element aus $_FILES */
-    public static function add(string $type, int $id, array $file, bool $visible, array $user): int
+    public static function add(string $type, int $id, array $file, bool $visible, array $user, bool $byCustomer = false): int
     {
         if (!in_array($type, self::TYPES, true) || !self::entityExists($type, $id)) {
             throw new ValidationException('Das Dokument wurde nicht gefunden.');
@@ -71,9 +71,9 @@ final class AttachmentService
         $attId = DB::insert('attachments', [
             'entity_type' => $type, 'entity_id' => $id, 'original_name' => $orig, 'stored_name' => $stored,
             'mime' => $mime, 'size' => $size, 'customer_visible' => $visible ? 1 : 0,
-            'uploaded_by' => $user['id'], 'created_at' => now(),
+            'uploaded_by' => $byCustomer ? null : $user['id'], 'by_customer' => $byCustomer ? 1 : 0, 'created_at' => now(),
         ]);
-        History::add($type, $id, 'note', null, null, 'Anhang hinzugefügt: ' . $orig . ($visible ? ' (für Kunden sichtbar)' : ''), $visible, $user);
+        History::add($type, $id, 'note', null, null, ($byCustomer ? 'Datei vom Kunden hochgeladen: ' : 'Anhang hinzugefügt: ') . $orig . (!$byCustomer && $visible ? ' (für Kunden sichtbar)' : ''), $visible, $user, $byCustomer ? 'customer' : 'user');
         return $attId;
     }
 

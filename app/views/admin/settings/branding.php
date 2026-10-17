@@ -28,6 +28,19 @@ $hasFav = Brand::hasUpload('favicon');
       <?php if ($hasFav): ?><div class="mb-2 flex items-center gap-3 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/70"><img src="<?= e(Brand::faviconUrl()) ?>" alt="" class="size-8 object-contain"><label class="ml-auto flex items-center gap-2 text-xs text-slate-600"><input type="checkbox" class="checkbox" name="favicon_remove" value="1">Entfernen</label></div><?php endif; ?>
       <input class="input" type="file" name="favicon" accept="image/png,image/x-icon,image/vnd.microsoft.icon,image/jpeg,image/webp,image/gif">
       <p class="hint">PNG oder ICO, mindestens 32 × 32 Pixel. Ohne Upload wird ein Symbol in der Markenfarbe verwendet.</p></div>
+
+    <div class="sm:col-span-6 border-t border-slate-100 pt-5">
+      <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900"><i class="bx bx-mobile-alt text-lg text-slate-400"></i>App (PWA)</h3>
+      <div class="grid gap-5 sm:grid-cols-6">
+        <label class="flex cursor-pointer items-start gap-3 sm:col-span-6"><input type="checkbox" class="checkbox mt-0.5" name="pwa_enabled" value="1"<?= ($s['pwa_enabled'] ?? '1') !== '0' ? ' checked' : '' ?>><span><span class="block text-sm font-medium text-slate-900">Als App installierbar machen</span><span class="block text-xs text-slate-500">Administration und Kundenportal lassen sich auf Smartphone, Tablet und Desktop wie eine App installieren (eigenes Symbol, Vollbild). Es werden nur Design-Dateien zwischengespeichert – nie Dokumente oder Kundendaten. Benötigt HTTPS.</span></span></label>
+        <div class="sm:col-span-3"><label class="label">Kurzname der App <span class="font-normal text-slate-400">(optional)</span></label>
+          <input class="input" name="pwa_short_name" maxlength="24" value="<?= $bv('pwa_short_name') ?>" placeholder="<?= e(Pwa::shortName('admin')) ?>">
+          <p class="hint">Beschriftung unter dem App-Symbol (max. 24 Zeichen). Das Symbol entsteht aus Logo und Markenfarbe.</p></div>
+        <div class="sm:col-span-3"><label class="label">Symbol-Vorschau</label>
+          <div class="flex items-center gap-3"><img src="<?= e(url('pwa/icon/96')) ?>?v=<?= e(Pwa::iconVersion()) ?>" alt="" class="size-14 rounded-2xl shadow-sm ring-1 ring-slate-200"><img src="<?= e(url('pwa/icon/96')) ?>?m=1&amp;v=<?= e(Pwa::iconVersion()) ?>" alt="" class="size-14 rounded-full shadow-sm ring-1 ring-slate-200"></div>
+          <p class="hint">Links normal, rechts als runde Maske (Android).</p></div>
+      </div>
+    </div>
   </div>
   <div class="flex justify-end rounded-b-2xl border-t border-slate-100 bg-slate-50/50 px-5 py-4 sm:px-6"><button class="btn btn-primary"><i class="bx bx-save"></i>Speichern</button></div>
 </form>

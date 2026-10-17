@@ -80,6 +80,7 @@ $revenue = array_sum(array_map(static fn($o) => $o['status'] !== 'cancelled' ? (
     <section class="reveal reveal-delay-3 card p-5 sm:p-6">
       <h3 class="text-sm font-semibold text-slate-900">Kundenportal</h3>
       <p class="mt-2 text-sm text-slate-600"><?= $customer['portal_enabled'] ? 'Zugang aktiv' : 'Zugang deaktiviert' ?><?= $customer['last_portal_login_at'] ? ' · zuletzt ' . time_ago($customer['last_portal_login_at']) : '' ?></p>
+      <a href="<?= e(url('admin/messages/' . $customer['id'])) ?>" class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline"><i class="bx bx-message-square-dots"></i>Nachrichten</a>
       <?php if ($customer['portal_enabled']): ?>
         <form method="post" action="<?= e(url('admin/customers/' . $customer['id'] . '/portal-link')) ?>" class="mt-3" data-confirm="Einen Anmeldelink (24 Stunden gültig) an <?= e($customer['email']) ?> senden?" data-confirm-label="Senden" data-confirm-variant="primary"><?= csrf_field() ?>
           <button class="btn btn-secondary btn-sm"><i class="bx bx-send"></i>Anmeldelink senden</button>

@@ -111,6 +111,9 @@ $act = static fn(string $a) => e(url('admin/invoices/' . $inv['id'] . '/' . $a))
         </div>
         <div><label class="label">Leistungszeitraum <span class="font-normal text-slate-400">(optional)</span></label><input class="input" name="service_period" maxlength="120" value="<?= e($inv['service_period'] ?? '') ?>" placeholder="z. B. 01.09.–30.09.2026"><p class="hint">Nach Art. 26 MWSTG gilt ohne Angabe das Rechnungsdatum als Leistungsdatum.</p></div>
         <div><label class="label">Einleitung</label><textarea class="input" name="intro" rows="3"><?= e($inv['intro']) ?></textarea></div>
+        <?php $docTpls = DocTemplate::forType('invoice'); if (count($docTpls) > 1): ?>
+        <div><label class="label" for="template_id">Dokumentvorlage (PDF-Layout)</label><select class="input" id="template_id" name="template_id"><option value="">Standardvorlage</option><?php foreach ($docTpls as $dt): ?><option value="<?= (int) $dt['id'] ?>"<?= (int) ($inv['template_id'] ?? 0) === (int) $dt['id'] ? ' selected' : '' ?>><?= e($dt['name']) ?></option><?php endforeach; ?></select></div>
+        <?php endif; ?>
         <div><label class="label">Zahlungsinformationen</label><textarea class="input font-mono text-[13px]" name="payment_info" rows="3"><?= e($inv['payment_info']) ?></textarea></div>
         <div><label class="label">Schlusstext</label><textarea class="input" name="footer" rows="2"><?= e($inv['footer']) ?></textarea></div>
         <button class="btn btn-secondary w-full"><i class="bx bx-save"></i>Speichern</button>

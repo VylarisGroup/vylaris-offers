@@ -99,6 +99,18 @@ $editorConfig = [
     <section class="reveal card" data-step="texts" data-step-title="Texte" data-step-icon="bx-text">
       <div class="card-header"><h2 class="card-title"><i class="bx bx-text"></i>Texte</h2></div>
       <div class="grid gap-4 p-5 sm:p-6">
+        <?php if (!empty($docTemplates) && count($docTemplates) > 1): ?>
+        <div>
+          <label class="label" for="template_id">Dokumentvorlage <span class="font-normal text-slate-400">(Layout des PDF)</span></label>
+          <select class="input" id="template_id" name="template_id" data-doc-template>
+            <option value="" data-intro="" data-closing="">Standardvorlage</option>
+            <?php foreach ($docTemplates as $dt): $dc = DocTemplate::config($dt); ?>
+              <option value="<?= (int) $dt['id'] ?>" data-intro="<?= e($dc['intro_default']) ?>" data-closing="<?= e($dc['closing_default']) ?>"<?= (int) $f('template_id') === (int) $dt['id'] ? ' selected' : '' ?>><?= e($dt['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+          <p class="hint">Bestimmt Farbe, Schrift, Logo und Tabellenstil. Verwalten unter <a class="link" href="<?= e(url('admin/doc-templates')) ?>">Dokumentvorlagen</a>.</p>
+        </div>
+        <?php endif; ?>
         <div><label class="label" for="intro">Einleitung</label><textarea class="input" id="intro" name="intro" rows="3"><?= e($f('intro')) ?></textarea></div>
         <div><label class="label" for="footer">Schlusstext / Konditionen</label><textarea class="input" id="footer" name="footer" rows="3"><?= e($f('footer')) ?></textarea></div>
       </div>
@@ -291,4 +303,20 @@ document.getElementById('offer-form').addEventListener('wizard:validate', functi
     e.preventDefault(); window.toast && window.toast('Bitte einen Produktbereich wählen.', 'error');
   }
 });
+</script>
+<script>
+(function () {
+  var sel = document.querySelector('[data-doc-template]'); if (!sel) return;
+  var intro = document.getElementById('intro'), foot = document.getElementById('footer'), prev = sel.options[sel.selectedIndex];
+  sel.addEventListener('change', function () {
+    var cur = sel.options[sel.selectedIndex];
+    // Texte nur ersetzen, wenn sie leer oder noch der Standardtext der bisherigen Vorlage sind
+    [[intro, 'intro'], [foot, 'closing']].forEach(function (p) {
+      var el = p[0], key = p[1]; if (!el) return;
+      var old = prev.dataset[key] || '', now = cur.dataset[key] || '';
+      if ((el.value.trim() === '' || el.value.trim() === old.trim()) && now !== '') el.value = now;
+    });
+    prev = cur;
+  });
+})();
 </script>

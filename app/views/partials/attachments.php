@@ -11,7 +11,7 @@ $attachments = AttachmentService::forEntity($attType, (int) $attId);
         <i class="bx bx-file text-xl text-slate-400"></i>
         <div class="min-w-0 flex-1">
           <a class="block truncate text-sm font-medium text-slate-900 hover:text-brand-700" href="<?= e(url('admin/attachments/' . $a['id'])) ?>"><?= e($a['original_name']) ?></a>
-          <p class="text-xs text-slate-500"><?= e(AttachmentService::human((int) $a['size'])) ?> · <?= fmt_date($a['created_at']) ?></p>
+          <p class="text-xs text-slate-500"><?= e(AttachmentService::human((int) $a['size'])) ?> · <?= fmt_date($a['created_at']) ?><?= !empty($a['by_customer']) ? ' · <span class="font-medium text-brand-700">vom Kunden hochgeladen</span>' : '' ?></p>
         </div>
         <form method="post" action="<?= e(url('admin/attachments/' . $a['id'] . '/visibility')) ?>"><?= csrf_field() ?>
           <button class="badge <?= $a['customer_visible'] ? 'badge-emerald' : 'badge-slate' ?>" data-tip="<?= $a['customer_visible'] ? 'Für Kunden sichtbar – klicken zum Verbergen' : 'Nur intern – klicken, um für Kunden freizugeben' ?>"><i class="bx <?= $a['customer_visible'] ? 'bx-show' : 'bx-hide' ?>"></i><?= $a['customer_visible'] ? 'Kunde' : 'intern' ?></button></form>

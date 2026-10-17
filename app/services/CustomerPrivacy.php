@@ -69,6 +69,7 @@ final class CustomerPrivacy
             ],
             'kunde' => $c,
             'anfragen' => DB::all('SELECT created_at, name, company, email, phone, subject, message, status FROM inquiries WHERE customer_id = ? OR email = ? ORDER BY id', [$id, $c['email']]),
+            'nachrichten' => DB::all('SELECT created_at, direction, author, entity_type, entity_id, body FROM portal_messages WHERE customer_id = ? ORDER BY id', [$id]),
             'offerten' => [], 'auftraege' => [], 'rechnungen' => [], 'abos' => [], 'verlauf' => [], 'anhaenge' => [], 'e_mails' => [],
         ];
         foreach (DB::all('SELECT * FROM offers WHERE customer_id = ? ORDER BY id', [$id]) as $o) {
@@ -144,6 +145,7 @@ final class CustomerPrivacy
             DB::exec('DELETE c FROM signature_codes c JOIN offers o ON o.id = c.offer_id WHERE o.customer_id = ?', [$id]);
             DB::exec('DELETE FROM mail_log WHERE recipient = ?', [$c['email']]);
             DB::exec('DELETE FROM inquiries WHERE customer_id = ? OR email = ?', [$id, $c['email']]);
+            DB::exec('DELETE FROM portal_messages WHERE customer_id = ?', [$id]);
         });
         Audit::log('customer_anonymized', 'Eingeschränkt (Aufbewahrungspflicht)', 'customer', $id, $user);
     }
@@ -172,6 +174,7 @@ final class CustomerPrivacy
                 'restricted_at' => $c['restricted_at'] ?: now(), 'anonymized_at' => now(), 'updated_at' => now(),
             ], 'id = :id', [':id' => $id]);
             DB::exec("DELETE FROM login_tokens WHERE subject_type = 'customer' AND subject_id = ?", [$id]);
+            DB::exec('DELETE FROM portal_messages WHERE customer_id = ?', [$id]);
 
             foreach (DB::all('SELECT id, signature_file FROM offers WHERE customer_id = ?', [$id]) as $o) {
                 if ($o['signature_file']) {
