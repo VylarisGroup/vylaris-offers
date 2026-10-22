@@ -22,6 +22,7 @@ $groups = [
     ]],
     ['crm', 'Kunden', 'bx-group', true, [
         ['admin/inquiries', 'Anfragen', 'bx-envelope-open', $newInq ?: null],
+        ['admin/portal', 'Kundenportal', 'bx-window-open', null],
         ['admin/messages', 'Nachrichten', 'bx-message-square-dots', $newMsgs ?: null],
         ['admin/customers', 'Kunden', 'bx-user-pin', null],
     ]],
@@ -53,7 +54,7 @@ if ($isAdmin) {
     $groups[2][4] = array_values(array_filter($groups[2][4], static fn ($n) => $n[0] !== 'admin/taxes'));
 }
 $hidden = static fn (string $href): bool => match ($href) {
-    'admin/invoices' => !License::has('invoices'), 'admin/subscriptions' => !License::has('subscriptions'), 'admin/inquiries' => !License::has('website'),
+    'admin/invoices' => !License::has('invoices'), 'admin/subscriptions' => !License::has('subscriptions'), 'admin/inquiries' => !License::has('website'), 'admin/messages' => !License::has('portal'),
     'admin/reports' => !License::has('reports'), 'admin/website' => !License::has('website'),
     'admin/integrations' => !(License::has('api') || License::has('webhooks') || License::has('reports')), default => false,
 };

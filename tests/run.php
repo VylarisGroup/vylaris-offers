@@ -302,5 +302,9 @@ foreach (['messages', 'documents', 'profile'] as $v) {
 }
 $eq('Admin: Dokumentvorlagen im Menü', str_contains((string) file_get_contents(APP_DIR . '/views/layouts/admin.php'), 'admin/doc-templates'), true);
 
+$eq('Portal-Verwaltung vorhanden', is_file(APP_DIR . '/views/admin/portal/index.php') && is_file(APP_DIR . '/controllers/PortalAdminController.php'), true);
+$eq('Lizenz: Admin-Nachrichten brauchen portal', License::featureForPath('/admin/messages/3'), 'portal');
+$eq('Lizenz: Portalverwaltung bleibt erreichbar', License::featureForPath('/admin/portal'), null);
+
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

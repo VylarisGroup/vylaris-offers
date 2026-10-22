@@ -2,12 +2,20 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 1.7.1 – 2026-10-22
+
+### Neu
+- **Kundenportal verwalten:** Neue Seite *Kunden → Kundenportal* mit Kennzahlen, **Systemprüfung** (Lizenz-Funktion «Kundenportal», E-Mail-Versand, Basis-Adresse, Kunden mit Zugang), **Anmeldung eines Kunden prüfen** (zeigt, warum kein Anmeldelink ankommt: Zugang aus, Sperre, Anforderungs-Limit, fehlgeschlagener Versand) sowie Liste aller Kunden mit Zugang an/aus und Anmeldelink senden.
+
+### Behoben
+- Nachrichten im Admin-Bereich richten sich nach der Lizenz-Funktion «Kundenportal» (Navigation und Zugriff).
+
 ## 1.7.0 – 2026-10-17
 
 ### Neu
-- **Dokumentvorlagen:** Das PDF-Layout von Offerten und Rechnungen ist jetzt einstellbar – Akzentfarbe, Schrift und Schriftgrösse, Seitenrand, Logo (Position und Grösse), Firmenangaben, Tabellenstil, Gesamtbetrag-Feld, Fusszeile mit Platzhaltern und Seitenzahlen. Unter *Katalog → Dokumentvorlagen* mit **Live-Vorschau** (Beispieldaten). Drei Vorlagen sind mitgeliefert (Standard, Elegant, Kompakt); je Offerten und Rechnungen lässt sich eine Standardvorlage festlegen. Gewählt wird die Vorlage in der Offerte (Abschnitt «Texte») bzw. im Rechnungsentwurf. Vorlagen können auch eigene Standardtexte für Einleitung und Schluss mitbringen.
-- **PWA:** Administration und Kundenportal lassen sich als App installieren (Smartphone, Tablet, Desktop) – mit eigenem Symbol aus Logo und Markenfarbe, Vollbild und Offline-Hinweisseite. Es werden nur Design-Dateien zwischengespeichert, nie Dokumente oder Kundendaten. Ein- und ausschaltbar sowie Kurzname unter *Einstellungen → Branding*.
-- **Kundenportal erweitert:** *Nachrichten* (Kunden schreiben dem Team, optional mit Bezug auf Offerte, Auftrag oder Rechnung; Antworten des Teams mit E-Mail-Hinweis), *Dokumente* (alle Offerten-/Rechnungs-PDFs und freigegebenen Dateien an einem Ort, Datei-Upload zu Aufträgen), *Meine Angaben* (Kunden pflegen Adresse und Telefon selbst). Im Admin-Bereich gibt es dazu den Posteingang *Kunden → Nachrichten* mit Zähler.
+- **Dokumentvorlagen:** Das PDF-Layout von Offerten und Rechnungen ist jetzt einstellbar – Akzentfarbe, Schrift und Schriftgrösse, Seitenrand, Logo (Position und Grösse), Firmenangaben, Tabellenstil, Gesamtbetrag-Feld, Fusszeile mit Platzhaltern und Seitenzahlen. Unter «Katalog → Dokumentvorlagen» mit **Live-Vorschau** (Beispieldaten). Drei Vorlagen sind mitgeliefert (Standard, Elegant, Kompakt); je Offerten und Rechnungen lässt sich eine Standardvorlage festlegen. Gewählt wird die Vorlage in der Offerte (Abschnitt «Texte») bzw. im Rechnungsentwurf. Vorlagen können auch eigene Standardtexte für Einleitung und Schluss mitbringen.
+- **PWA:** Administration und Kundenportal lassen sich als App installieren (Smartphone, Tablet, Desktop) – mit eigenem Symbol aus Logo und Markenfarbe, Vollbild und Offline-Hinweisseite. Es werden nur Design-Dateien zwischengespeichert, nie Dokumente oder Kundendaten. Ein- und ausschaltbar sowie Kurzname unter «Einstellungen → Branding».
+- **Kundenportal erweitert:** «Nachrichten» (Kunden schreiben dem Team, optional mit Bezug auf Offerte, Auftrag oder Rechnung; Antworten des Teams mit E-Mail-Hinweis), «Dokumente» (alle Offerten-/Rechnungs-PDFs und freigegebenen Dateien an einem Ort, Datei-Upload zu Aufträgen), «Meine Angaben» (Kunden pflegen Adresse und Telefon selbst). Im Admin-Bereich gibt es dazu den Posteingang «Kunden → Nachrichten» mit Zähler.
 
 ### Verbessert
 - Vom Kunden hochgeladene Dateien sind bei den Anhängen des Auftrags gekennzeichnet; das Team wird per E-Mail benachrichtigt.

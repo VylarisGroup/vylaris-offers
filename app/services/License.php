@@ -48,6 +48,7 @@ final class License
         '#^/admin/integrations/webhooks#'                => 'webhooks',
         '#^/api/v1/(?!ping$)#'                           => 'api',
         '#^/portal(/|$)#'                                => 'portal',
+        '#^/admin/messages(/|$)#'                        => 'portal',
         '#^/admin/(website|inquiries)(/|$)#'             => 'website',
         '#^/anfrage$#'                                   => 'website',
         '#^/admin/sso(/|$)#'                             => 'sso',

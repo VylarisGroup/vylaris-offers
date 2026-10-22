@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 define('APP_ROOT', dirname(__DIR__));
 define('APP_DIR', __DIR__);
-define('APP_VERSION', '1.7.0');
+define('APP_VERSION', '1.7.1');
 
 // Mitgelieferte Bibliotheken (kein Composer nötig): FPDF und chillerlan/php-qrcode (MIT).
 spl_autoload_register(static function (string $class): void {
