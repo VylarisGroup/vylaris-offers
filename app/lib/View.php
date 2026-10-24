@@ -11,7 +11,8 @@ final class View
         }
         // Von der View gesetzte Werte (z. B. $title, $scripts) an das Layout weitergeben.
         $shared = array_intersect_key($vars, array_flip(['title', 'scripts']));
-        return self::partial('layouts/' . $layout, array_merge($data, $shared, ['content' => $content]));
+        $html = self::partial('layouts/' . $layout, array_merge($data, $shared, ['content' => $content]));
+        return $layout === 'admin' ? Brand::enforceWatermark($html) : $html;
     }
 
     public static function partial(string $template, array $data = []): string

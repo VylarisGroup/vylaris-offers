@@ -145,7 +145,8 @@ $brandLogo = Brand::logoUrl();
   </div>
   <?php endif; ?>
   <?php if (Pwa::enabled()): ?><button type="button" hidden data-pwa-install class="mx-4 mb-2 inline-flex items-center justify-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-xs font-semibold text-brand-700 ring-1 ring-brand-100 transition hover:bg-brand-100"><i class="bx bx-download text-base"></i>App installieren</button><?php endif; ?>
-  <p class="shrink-0 border-t border-slate-100 px-5 py-3 text-center text-[11px] font-medium tracking-wide text-slate-400" data-powered-by><?= e(Brand::POWERED_BY) ?> · <a href="<?= e(url('admin/changelog')) ?>" class="hover:text-slate-600" data-tip="Änderungsprotokoll">v<?= e(APP_VERSION) ?></a></p>
+  <p class="shrink-0 px-5 pt-3 pb-0 text-left text-[10px] text-slate-400"><a href="<?= e(url('admin/changelog')) ?>" class="hover:text-slate-600" data-tip="Änderungsprotokoll">Version <?= e(APP_VERSION) ?></a></p>
+  <?= Brand::WATERMARK_SLOT ?>
 </aside>
 
 <div class="lg:pl-72">

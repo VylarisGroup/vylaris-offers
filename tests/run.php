@@ -306,5 +306,13 @@ $eq('Portal-Verwaltung vorhanden', is_file(APP_DIR . '/views/admin/portal/index.
 $eq('Lizenz: Admin-Nachrichten brauchen portal', License::featureForPath('/admin/messages/3'), 'portal');
 $eq('Lizenz: Portalverwaltung bleibt erreichbar', License::featureForPath('/admin/portal'), null);
 
+$wm = Brand::watermark();
+$eq('Watermark: Text und Link', str_contains($wm, 'Powered by') && str_contains($wm, 'href="https://vylaris.ch"') && str_contains($wm, 'VylarisOffers'), true);
+$eq('Watermark: Platzhalter wird ersetzt', substr_count(Brand::enforceWatermark('<aside>x' . Brand::WATERMARK_SLOT . '</aside></body>'), 'data-powered-by'), 1);
+$eq('Watermark: ohne Platzhalter fest eingefügt', str_contains(Brand::enforceWatermark('<html><body>x</body></html>'), 'position:fixed'), true);
+$eq('Watermark: manipulierte Variante ersetzt', substr_count(Brand::enforceWatermark('<aside><div data-powered-by style="display:none">Powered by X</div>' . Brand::WATERMARK_SLOT . '</aside></body>'), 'data-powered-by'), 1);
+$eq('Watermark: Layout nutzt Platzhalter', str_contains((string) file_get_contents(APP_DIR . '/views/layouts/admin.php'), 'Brand::WATERMARK_SLOT'), true);
+$eq('Watermark: View erzwingt sie für das Admin-Layout', str_contains((string) file_get_contents(APP_DIR . '/lib/View.php'), 'enforceWatermark'), true);
+
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

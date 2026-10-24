@@ -6,7 +6,7 @@ $hasFav = Brand::hasUpload('favicon');
 ?>
 <form method="post" action="<?= e(url('admin/settings/branding')) ?>" enctype="multipart/form-data" class="reveal card max-w-4xl"><?= csrf_field() ?>
   <div class="grid gap-5 p-5 sm:grid-cols-6 sm:p-6">
-    <div class="sm:col-span-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 ring-1 ring-slate-200/70"><i class="bx bx-info-circle align-middle text-slate-400"></i> Das System tritt unter Ihrem eigenen Namen und Erscheinungsbild auf: Administration, Anmeldung, Kundenportal, Offerten, E-Mails und PDF-Dokumente. Einzig in der Seitenliste der Administration steht unten der Hinweis «<?= e(Brand::POWERED_BY) ?>».</div>
+    <div class="sm:col-span-6 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 ring-1 ring-slate-200/70"><i class="bx bx-info-circle align-middle text-slate-400"></i> Das System tritt unter Ihrem eigenen Namen und Erscheinungsbild auf: Administration, Anmeldung, Kundenportal, Offerten, E-Mails und PDF-Dokumente. Fest eingebaut und nicht änderbar ist nur der Hinweis «<?= e(Brand::POWERED_BY) ?>» unten links in der Seitenleiste der Administration (Link auf vylaris.ch).</div>
 
     <div class="sm:col-span-3"><label class="label">Systemname <span class="font-normal text-slate-400">(optional)</span></label>
       <input class="input" name="brand_name" maxlength="60" value="<?= $bv('brand_name') ?>" placeholder="<?= e($s['company_name'] ?? '') ?>">

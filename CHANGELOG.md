@@ -2,6 +2,11 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 1.7.2 – 2026-10-24
+
+### Verbessert
+- **Hinweis «Powered by VylarisOffers»** steht jetzt unten links in der Seitenleiste der Administration, gut lesbar und dezent, mit Link auf vylaris.ch. Er ist fest eingebaut und lässt sich weder über Einstellungen noch über das Layout ausblenden oder ändern.
+
 ## 1.7.1 – 2026-10-22
 
 ### Neu

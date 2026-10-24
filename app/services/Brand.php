@@ -9,6 +9,30 @@ declare(strict_types=1);
 final class Brand
 {
     public const POWERED_BY = 'Powered by VylarisOffers';
+    public const POWERED_URL = 'https://vylaris.ch';
+    public const WATERMARK_SLOT = '<!--vl:watermark-->';
+
+    /** Fester Hinweis unten links in der Seitenleiste. Wird unabhängig vom Layout bei jeder Ausgabe erzwungen (siehe enforceWatermark). */
+    public static function watermark(bool $fixed = false): string
+    {
+        $pos = $fixed ? 'position:fixed!important;left:0!important;bottom:0!important;z-index:2147483000!important;' : '';
+        return '<div data-powered-by style="' . $pos . 'display:block!important;visibility:visible!important;opacity:1!important;clip:auto!important;transform:none!important;padding:10px 20px!important;text-align:left!important;font:500 11px/1.3 Inter,system-ui,sans-serif!important;letter-spacing:.02em!important;background:#fff!important;border-top:1px solid #f1f5f9!important;">'
+            . '<a href="' . self::POWERED_URL . '" target="_blank" rel="noopener" data-powered-link style="display:inline!important;visibility:visible!important;opacity:1!important;color:#64748b!important;text-decoration:none!important;" title="VylarisOffers – vylaris.ch">'
+            . 'Powered by <strong style="color:var(--brand,#4f46e5)!important;font-weight:700!important">VylarisOffers</strong></a></div>';
+    }
+
+    /** Entfernt vorhandene Varianten und setzt den festen Hinweis (Platzhalter, sonst Seitenleiste, sonst fest unten links) in die Ausgabe. */
+    public static function enforceWatermark(string $html): string
+    {
+        $html = (string) preg_replace('#<div data-powered-by\b.*?</a></div>#s', '', $html);
+        $html = (string) preg_replace('#<[a-z]+\b[^>]*\bdata-powered-by\b[^>]*>.*?</[a-z]+>#is', '', $html);
+        if (str_contains($html, self::WATERMARK_SLOT)) {
+            return preg_replace('/' . preg_quote(self::WATERMARK_SLOT, '/') . '/', str_replace('\\', '\\\\', self::watermark()), $html, 1) ?? $html;
+        }
+        $mark = self::watermark(true);
+        $pos = strripos($html, '</body>');
+        return $pos === false ? $html . $mark : substr($html, 0, $pos) . $mark . substr($html, $pos);
+    }
     public const DEFAULT_TAGLINE = 'Offerten & Aufträge';
     private const KINDS = ['logo' => 'brand_logo_file', 'favicon' => 'brand_favicon_file'];
     private const MIME = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp', 'image/gif' => 'gif', 'image/x-icon' => 'ico', 'image/vnd.microsoft.icon' => 'ico'];

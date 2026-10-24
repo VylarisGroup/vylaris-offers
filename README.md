@@ -1,6 +1,6 @@
 # VylarisOffers – Offerten- & Auftragsmanagement
 
-**Version 1.7.1** – Neu in 1.7: Dokumentvorlagen (PDF-Layout), PWA, erweitertes Kundenportal. Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
+**Version 1.7.2** – Neu in 1.7: Dokumentvorlagen (PDF-Layout), PWA, erweitertes Kundenportal. Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
 
 PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand – **ausgelegt auf die Schweiz** (MWST, QR-Rechnung, CHF). Ohne Framework, ohne Composer, ohne Build-Schritt – läuft auf jedem Shared Hosting mit Plesk.
 
@@ -663,3 +663,5 @@ Kunden (Anmeldung per Link) sehen im Portal zusätzlich:
 **Datenschutz:** Nachrichten sind im Datenexport (Auskunft) enthalten und werden beim Einschränken, Anonymisieren oder Löschen eines Kunden entfernt.
 
 **Verwalten und Fehlersuche:** *Kunden → Kundenportal* zeigt die Systemprüfung (Lizenz-Funktion `portal`, E-Mail-Versand, Basis-Adresse), listet alle Kunden mit Zugang (an/aus, Anmeldelink senden, letzte Anmeldung) und prüft per E-Mail-Adresse, warum eine Anmeldung nicht funktioniert. Häufige Ursachen: Lizenz ohne Funktion `portal` (Portal liefert «Diese Funktion ist nicht verfügbar»), kein SMTP-Server eingetragen, Portalzugang beim Kunden ausgeschaltet, abweichende E-Mail-Adresse, Limit (3 Links pro 15 Minuten).
+
+**Hinweis «Powered by VylarisOffers»:** Unten links in der Seitenleiste der Administration steht ein fester Hinweis mit Link auf <https://vylaris.ch>. Er ist Teil des Produkts, nicht abschaltbar und nicht über das Branding änderbar. Das System setzt ihn bei jeder Ausgabe des Admin-Layouts selbst ein (`Brand::enforceWatermark`) und ersetzt veränderte oder entfernte Varianten.
