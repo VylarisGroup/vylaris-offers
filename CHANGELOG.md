@@ -2,6 +2,11 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 2.0.0 – 2026-10-29
+
+### Hinweis
+- Neue Hauptversion: Sie bündelt die Neuerungen aus 1.7 und 1.8 (Dokumentvorlagen, PWA, erweitertes Kundenportal, Wegfall der Lizenzprüfung). Es gibt keine inhaltlichen Änderungen gegenüber 1.8.0; das Update erfolgt wie gewohnt, ohne weitere Schritte.
+
 ## 1.8.0 – 2026-10-29
 
 ### Verbessert
