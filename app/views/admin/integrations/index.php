@@ -15,7 +15,6 @@ $evLabels = Webhooks::EVENTS;
 <?php endif; ?>
 
 <div class="grid gap-6 lg:grid-cols-2">
-<?php if (License::has('api')): ?>
   <section class="reveal card p-5 sm:p-6">
     <h2 class="text-sm font-semibold text-slate-900"><i class="bx bx-code-curly align-middle text-slate-400"></i> API (nur lesend)</h2>
     <p class="mt-1 text-sm text-slate-500">Basis-URL: <code><?= e($base) ?>/api/v1</code> · Header <code>Authorization: Bearer &lt;Token&gt;</code>. Endpunkte: <code>/ping</code>, <code>/invoices</code>, <code>/offers</code>, <code>/orders</code>, <code>/customers</code> (je auch <code>/{id}</code>). Filter: <code>status</code>, <code>from</code>, <code>to</code> (YYYY-MM-DD), <code>customer_id</code>, <code>page</code>, <code>per_page</code> (max. 100). Limit: 120 Anfragen/Minute.</p>
@@ -48,9 +47,7 @@ $evLabels = Webhooks::EVENTS;
     </ul>
     <?php endif; ?>
   </section>
-<?php endif; ?>
 
-<?php if (License::has('reports')): ?>
   <section class="reveal card p-5 sm:p-6">
     <h2 class="text-sm font-semibold text-slate-900"><i class="bx bx-book-content align-middle text-slate-400"></i> Buchungsjournal (CSV)</h2>
     <p class="mt-1 text-sm text-slate-500">Generisches Journal: Rechnungen als „Debitoren an Ertrag“ je Steuersatz (Betrag brutto mit Steuersatz/-betrag) und Zahlungseingänge als „Bank an Debitoren“. Die Spalten lassen sich in den CSV-Import gängiger Buchhaltungssoftware zuordnen; ein softwarespezifisches Format (z. B. Bexio, Abacus) ist nicht enthalten.</p>
@@ -69,10 +66,8 @@ $evLabels = Webhooks::EVENTS;
       <button class="btn btn-primary"><i class="bx bx-download"></i>Journal herunterladen</button>
     </form>
   </section>
-<?php endif; ?>
 </div>
 
-<?php if (License::has('webhooks')): ?>
 <section class="reveal card mt-6 p-5 sm:p-6">
   <h2 class="text-sm font-semibold text-slate-900"><i class="bx bx-broadcast align-middle text-slate-400"></i> Webhooks</h2>
   <p class="mt-1 text-sm text-slate-500">Bei Ereignissen sendet das System einen signierten HTTPS-POST (JSON). Es werden nur Kennungen, Nummern, Beträge und Kundenname/-nummer übermittelt. Signatur-Header: <code>X-Offerten-Signature: t=…,v1=HMAC-SHA256(secret, "t.body")</code>. Fehlgeschlagene Zustellungen werden bis zu 6-mal wiederholt. Es sind nur öffentliche https-Adressen erlaubt.</p>
@@ -110,4 +105,3 @@ $evLabels = Webhooks::EVENTS;
   </ul>
   <?php endif; ?>
 </section>
-<?php endif; ?>

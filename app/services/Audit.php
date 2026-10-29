@@ -12,7 +12,6 @@ final class Audit
         'login'               => 'Anmeldung',
         'login_failed'        => 'Fehlgeschlagene Anmeldung',
         '2fa_failed'          => 'Falscher 2FA-Code',
-        'license'             => 'Lizenz',
         'update_settings'     => 'Update-Einstellungen',
         'update_installed'    => 'Update installiert',
         'update_failed'       => 'Update fehlgeschlagen',

@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 define('APP_ROOT', __DIR__);
 define('APP_DIR', __DIR__ . '/app');
-define('APP_VERSION', '1.7.2');
+define('APP_VERSION', '1.8.0');
 
 $configFile = APP_DIR . '/config.php';
 $lockFile = APP_ROOT . '/storage/install.lock';
@@ -87,7 +87,7 @@ function s_requirements(): array
         ['OpenSSL (Verschlüsselung, SMTP/TLS)', extension_loaded('openssl')],
         ['Mbstring', extension_loaded('mbstring')],
         ['JSON', extension_loaded('json')],
-        ['Sodium (Prüfung der Lizenzsignatur)', function_exists('sodium_crypto_sign_verify_detached')],
+        ['Sodium (Signaturprüfung für Single Sign-On)', function_exists('sodium_crypto_sign_verify_detached')],
         ['Ordner app/ beschreibbar (für config.php)', is_writable(APP_DIR)],
         ['Ordner storage/ beschreibbar', is_writable(APP_ROOT . '/storage')],
         ['storage/logs/ beschreibbar', is_dir(APP_ROOT . '/storage/logs') ? is_writable(APP_ROOT . '/storage/logs') : is_writable(APP_ROOT . '/storage')],
@@ -269,15 +269,6 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     $app['mwst_saldo_rate'] = rtrim(rtrim(number_format((float) $r, 1, '.', ''), '0'), '.');
                 }
                 $_SESSION['setup']['app'] = $app;
-                $lic = [];
-                foreach (['license_key'] as $k) {
-                    $lic[$k] = trim(str_replace("\r", '', (string) ($_POST[$k] ?? '')));
-                }
-                $lic['license_key'] = strtoupper($lic['license_key']);
-                $_SESSION['setup']['lic'] = $lic;
-                if ($lic['license_key'] !== '' && !preg_match('/^[A-Z0-9][A-Z0-9_-]{5,63}$/', $lic['license_key'])) {
-                    throw new RuntimeException('Der Lizenzschlüssel hat ein ungültiges Format.');
-                }
                 $sso = ['sso_issuer' => trim((string) ($_POST['sso_issuer'] ?? '')), 'sso_auto_create' => !empty($_POST['sso_auto_create']) ? '1' : '0'];
                 if ($sso['sso_issuer'] !== '') {
                     $norm = Oidc::normalizeIssuer($sso['sso_issuer']);
@@ -497,21 +488,12 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $settings += $cfg['doc'] ?? [];
                 $settings += array_intersect_key($cfg['pay'] ?? [], array_flip(['pay_mollie_enabled', 'pay_stripe_enabled', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret']));
                 $settings += $cfg['ops'] ?? [];
-                $lic = $cfg['lic'] ?? [];
                 $sso = $cfg['sso'] ?? [];
                 if (($sso['sso_issuer'] ?? '') !== '') {
                     $settings += ['sso_issuer' => $sso['sso_issuer'], 'sso_enabled' => '1', 'sso_auto_create' => $sso['sso_auto_create'] ?? '0'];
                 }
                 $settings = array_filter($settings, static fn ($v) => $v !== null);
                 Settings::set($settings);
-                $licenseResult = null;
-                if (($lic['license_key'] ?? '') !== '') {
-                    License::setKey($lic['license_key']);
-                    $licenseResult = ['ok' => false, 'message' => 'Der öffentliche Schlüssel fehlt – unter «Lizenz» ergänzen und aktivieren.'];
-                    if (License::pemToRaw(License::publicKey()) !== null) {
-                        $licenseResult = License::activate();
-                    }
-                }
 
                 // Branding-Dateien und Startseite (Website-Builder) übernehmen.
                 $site = $cfg['site'] ?? [];
@@ -611,7 +593,7 @@ if (!$locked && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     'country' => $cfg['app']['company_country'] ?? 'CH',
                     'logo' => !empty($site['files']['logo']), 'site' => ($site['site_enabled'] ?? '1') === '1',
                     'health_url' => rtrim($cfg['app']['base_url'], '/') . '/health?token=' . Settings::get('health_token'),
-                    'sso' => ($sso['sso_issuer'] ?? '') !== '' ? $sso['sso_issuer'] : '', 'license' => $licenseResult, 'license_key' => ($lic['license_key'] ?? '') !== '',
+                    'sso' => ($sso['sso_issuer'] ?? '') !== '' ? $sso['sso_issuer'] : '',
                     'liable' => ($cfg['app']['mwst_liable'] ?? '1') === '1', 'uid' => ($cfg['app']['company_vat_id'] ?? '') !== '',
                 ];
                 unset($_SESSION['setup'], $_SESSION['setup_step']);
@@ -706,8 +688,6 @@ $steps = [1 => 'System', 2 => 'Datenbank', 3 => 'Firma', 4 => 'Zahlung', 5 => 'E
       <ol class="mt-3 space-y-3 text-sm text-slate-700">
         <li class="flex gap-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200"><i class="bx bx-shield-quarter mt-0.5 text-xl text-amber-600"></i><span><strong>setup.php löschen.</strong> Löschen Sie die Datei jetzt vom Server (Plesk → Dateien).</span></li>
         <?php if (!$done['https']): ?><li class="flex gap-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200"><i class="bx bx-lock-open-alt mt-0.5 text-xl text-amber-600"></i><span><strong>HTTPS aktivieren.</strong> Die Basis-URL beginnt mit <code>http://</code>. In Plesk unter „SSL/TLS-Zertifikate“ ein Zertifikat (Let’s Encrypt) ausstellen, danach in <code>app/config.php</code> die <code>base_url</code> auf <code>https://…</code> ändern. Online-Zahlung und Passkeys funktionieren erst mit HTTPS.</span></li><?php endif; ?>
-        <?php $lr = $done['license']; $lok = $lr && !empty($lr['ok']); ?>
-        <li class="flex gap-3 rounded-xl p-4 ring-1 <?= $lok ? 'bg-emerald-50 ring-emerald-200' : 'bg-amber-50 ring-amber-200' ?>"><i class="bx bx-key mt-0.5 text-xl <?= $lok ? 'text-emerald-600' : 'text-amber-600' ?>"></i><span><strong><?= $lok ? 'Lizenz aktiviert.' : 'Lizenz aktivieren:' ?></strong> <?= $lok ? 'Alle Funktionen Ihres Tarifs sind freigeschaltet.' : s_e(!$done['license_key'] ? 'Ohne Lizenz läuft das System im Lesemodus. Schlüssel und öffentlichen Schlüssel unter Lizenz eintragen und aktivieren.' : (string) ($lr['message'] ?? 'Aktivierung nicht möglich – unter Lizenz erneut versuchen.')) ?></span></li>
         <?php if (!empty($done['sso'])): ?><li class="flex gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200"><i class="bx bx-log-in-circle mt-0.5 text-xl text-slate-500"></i><span><strong>Single Sign-On vorbereitet.</strong> Anbieter: <?= s_e($done['sso']) ?>. Die Redirect-URI <code class="rounded bg-white px-1"><?= s_e(rtrim($done['base_url'], '/')) ?>/admin/sso/callback</code> wird bei der ersten Anmeldung automatisch registriert; andernfalls unter Einstellungen → Single Sign-On Client-ID und Secret eintragen.</span></li><?php endif; ?>
         <li class="flex gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200/70"><i class="bx bx-time-five mt-0.5 text-xl text-slate-400"></i><span><strong>Cronjob einrichten</strong> (Plesk → Geplante Aufgaben → „PHP-Skript ausführen“), täglich z. B. 06:00:<br><code class="mt-1 block break-all rounded bg-white px-2 py-1 text-xs ring-1 ring-slate-200"><?= s_e($done['cron']) ?></code><span class="text-xs text-slate-500">Alternativ als Befehl: <code><?= s_e($done['php']) ?> <?= s_e($done['cron']) ?></code></span></span></li>
         <?php if ($done['mail'] === 'log' || ($done['mail'] === 'smtp' && !$done['mail_host'])): ?><li class="flex gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200/70"><i class="bx bx-envelope mt-0.5 text-xl text-slate-400"></i><span><strong>E-Mail-Versand konfigurieren</strong> unter <em>Einstellungen → E-Mail</em> und mit „Test senden“ prüfen – bis dahin werden keine Mails verschickt.</span></li><?php endif; ?>
@@ -796,13 +776,9 @@ $steps = [1 => 'System', 2 => 'Datenbank', 3 => 'Firma', 4 => 'Zahlung', 5 => 'E
         <div class="sm:col-span-3"><label class="label">Abrechnungsart</label><select class="input" name="mwst_method"><option value="agreed"<?= s_val('app', 'mwst_method', 'agreed') === 'agreed' ? ' selected' : '' ?>>Vereinbarte Entgelte (Rechnungsstellung)</option><option value="received"<?= s_val('app', 'mwst_method') === 'received' ? ' selected' : '' ?>>Vereinnahmte Entgelte (Zahlungseingang)</option></select></div>
         <div class="sm:col-span-3"><label class="label">Abrechnungsperiode</label><select class="input" name="mwst_period"><?php foreach (['quarter' => 'Vierteljährlich', 'semester' => 'Halbjährlich (z. B. Saldosteuersatz)', 'year' => 'Jährlich'] as $pk => $pl): ?><option value="<?= $pk ?>"<?= s_val('app', 'mwst_period', 'quarter') === $pk ? ' selected' : '' ?>><?= $pl ?></option><?php endforeach; ?></select></div>
         <div class="sm:col-span-3"><label class="label">Saldosteuersatz <span class="font-normal text-slate-400">(optional)</span></label><input class="input" name="mwst_saldo_rate" value="<?= s_e(s_val('app', 'mwst_saldo_rate')) ?>" inputmode="decimal" placeholder="z. B. 6.2"><p class="hint">Nur mit Bewilligung der ESTV.</p></div>
-        <div class="sm:col-span-6 mt-2 border-t border-slate-100 pt-4"><h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><i class="bx bx-key text-xl text-slate-400"></i>Lizenz</h2>
-          <p class="mt-1 text-sm text-slate-500">VylarisOffers ist lizenzpflichtig. Ohne gültige Lizenz läuft das System im Lesemodus. Den Schlüssel können Sie auch später unter <em>Lizenz</em> eingeben.</p></div>
-        <?php $lc = $_SESSION['setup']['lic'] ?? []; ?>
-        <div class="sm:col-span-6"><label class="label">Lizenzschlüssel</label><input class="input font-mono" name="license_key" value="<?= s_e($lc['license_key'] ?? '') ?>" placeholder="XX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false"></div>
         <?php $sc = $_SESSION['setup']['sso'] ?? []; ?>
         <div class="sm:col-span-6 mt-2 border-t border-slate-100 pt-4"><h2 class="flex items-center gap-2 text-base font-semibold text-slate-900"><i class="bx bx-log-in-circle text-xl text-slate-400"></i>Single Sign-On <span class="font-normal text-slate-400">(optional)</span></h2>
-          <p class="mt-1 text-sm text-slate-500">Mitarbeitende melden sich per OpenID Connect an. Es genügt die Adresse des Anbieters (z. B. <em>https://vylaris.tech</em>) – alles Weitere wird automatisch erkannt. Benötigt die Lizenzfunktion «sso».</p></div>
+          <p class="mt-1 text-sm text-slate-500">Mitarbeitende melden sich per OpenID Connect an. Es genügt die Adresse des Anbieters (z. B. <em>https://vylaris.tech</em>) – alles Weitere wird automatisch erkannt.</p></div>
         <div class="sm:col-span-4"><label class="label">Adresse des Anbieters</label><input class="input font-mono text-[13px]" name="sso_issuer" value="<?= s_e($sc['sso_issuer'] ?? '') ?>" placeholder="https://vylaris.tech" autocomplete="off" spellcheck="false"></div>
         <label class="flex cursor-pointer items-center gap-3 sm:col-span-2"><input type="checkbox" class="size-4 rounded accent-indigo-600" name="sso_auto_create" value="1" <?= ($sc['sso_auto_create'] ?? '0') === '1' ? 'checked' : '' ?>><span class="text-sm text-slate-700">Unbekannte Konten automatisch anlegen</span></label>
       </div>

@@ -50,7 +50,7 @@ final class Webhooks
     public static function dispatch(string $event, array $data): void
     {
         try {
-            if (!isset(self::EVENTS[$event]) || !License::has('webhooks')) {
+            if (!isset(self::EVENTS[$event])) {
                 return;
             }
             $hooks = DB::all('SELECT id, events FROM webhooks WHERE active = 1');

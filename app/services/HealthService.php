@@ -33,12 +33,6 @@ final class HealthService
         $out[] = $missing
             ? self::c('System', 'ext', 'PHP-Erweiterungen', 'fail', 'Fehlend: ' . implode(', ', $missing), 'Aktivieren Sie die Erweiterungen in Plesk unter „PHP-Einstellungen“.')
             : self::c('System', 'ext', 'PHP-Erweiterungen', 'ok', 'Alle benötigten Erweiterungen sind aktiv.');
-        $lic = License::status();
-        $out[] = $lic['mode'] === 'readonly'
-            ? self::c('System', 'license', 'Lizenz', 'fail', $lic['message'], 'Das System läuft im Lesemodus – unter «Lizenz» Schlüssel prüfen oder erneuern.')
-            : (in_array($lic['status'], ['offline', 'grace'], true) || ($lic['expires'] && $lic['expires'] - time() < 14 * 86400)
-                ? self::c('System', 'license', 'Lizenz', 'warn', $lic['status'] === 'active' ? 'Läuft am ' . date('d.m.Y', (int) $lic['expires']) . ' ab.' : $lic['message'], 'Verlängern bzw. Verbindung zum Lizenzserver prüfen.')
-                : self::c('System', 'license', 'Lizenz', 'ok', 'Gültig' . ($lic['plan'] ? ' (Tarif ' . $lic['plan'] . ')' : '') . '.'));
         $out[] = !class_exists('ZipArchive')
             ? self::c('System', 'zip', 'ZIP-Unterstützung', 'warn', 'ZipArchive fehlt.', 'Ohne die Erweiterung „zip“ ist nur das Datenbank-Backup ohne Dateien möglich.')
             : self::c('System', 'zip', 'ZIP-Unterstützung', 'ok', 'Verfügbar (Backup inklusive Dateien).');

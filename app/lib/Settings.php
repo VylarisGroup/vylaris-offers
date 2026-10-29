@@ -5,7 +5,7 @@ declare(strict_types=1);
 final class Settings
 {
     private static ?array $cache = null;
-    private const ENCRYPTED = ['sso_client_secret', 'license_key', 'smtp_pass', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret'];
+    private const ENCRYPTED = ['sso_client_secret', 'smtp_pass', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret'];
 
     public const DEFAULTS = [
         'company_name' => 'Meine Firma',
@@ -71,7 +71,6 @@ final class Settings
         'update_checked_at' => '0',
         'update_last' => '',
         'update_error' => '',
-        'license_grace_days' => '3',
         'privacy_contact' => '',
         'privacy_text' => '',
         'acc_debtors' => '1100',

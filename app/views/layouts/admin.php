@@ -9,7 +9,6 @@ $newOrders = (int) DB::val("SELECT COUNT(*) FROM orders WHERE status = 'new'");
 $newInq = InquiryService::newCount();
 $newMsgs = PortalMessage::unreadForTeam();
 $openInv = (int) DB::val("SELECT COUNT(*) FROM invoices WHERE status = 'sent' AND due_date < CURDATE()");
-$lic = License::status();
 $isAdmin = $me && $me['role'] === 'admin';
 $tips = ['admin/orders' => 'Neue Aufträge', 'admin/invoices' => 'Überfällige Rechnungen', 'admin/inquiries' => 'Neue Anfragen', 'admin/messages' => 'Ungelesene Kundennachrichten'];
 // Einträge: [Pfad, Label, Icon, Zähler|null, Zählerfarbe]
@@ -45,7 +44,6 @@ if ($isAdmin) {
     $groups[] = ['system', 'System', 'bx-cog', false, [
         ['admin/settings', 'Einstellungen', 'bx-slider-alt', null],
         ['admin/update', 'Update', 'bx-cloud-download', UpdateService::badge() ?: null],
-        ['admin/license', 'Lizenz', 'bx-key', $lic['mode'] === 'readonly' ? '!' : null],
         ['admin/health', 'Systemstatus', 'bx-pulse', HealthService::badge() ?: null],
         ['admin/mail-log', 'E-Mail-Protokoll', 'bx-envelope', null],
         ['admin/audit', 'Audit-Log', 'bx-shield-quarter', null],
@@ -53,15 +51,6 @@ if ($isAdmin) {
 } else {
     $groups[2][4] = array_values(array_filter($groups[2][4], static fn ($n) => $n[0] !== 'admin/taxes'));
 }
-$hidden = static fn (string $href): bool => match ($href) {
-    'admin/invoices' => !License::has('invoices'), 'admin/subscriptions' => !License::has('subscriptions'), 'admin/inquiries' => !License::has('website'), 'admin/messages' => !License::has('portal'),
-    'admin/reports' => !License::has('reports'), 'admin/website' => !License::has('website'),
-    'admin/integrations' => !(License::has('api') || License::has('webhooks') || License::has('reports')), default => false,
-};
-foreach ($groups as &$g) {
-    $g[4] = array_values(array_filter($g[4], static fn ($n) => !$hidden($n[0])));
-}
-unset($g);
 $groups = array_values(array_filter($groups, static fn ($g) => $g[4] !== []));
 $pwaApp = 'admin';
 $siteName = Brand::name();
@@ -156,14 +145,6 @@ $brandLogo = Brand::logoUrl();
     <a href="<?= e(url('admin/offers/new')) ?>" class="btn btn-primary btn-icon" data-tip="Neue Offerte" aria-label="Neue Offerte"><i class="bx bx-plus text-xl"></i></a>
   </header>
   <main id="main" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
-    <?php $soon = $lic['expires'] && $lic['expires'] - time() < 14 * 86400 && $lic['mode'] === 'full';
-    if ($lic['mode'] === 'readonly' || $soon || in_array($lic['status'], ['offline', 'grace'], true) || $lic['trial']): $bad = $lic['mode'] === 'readonly'; ?>
-      <div class="mb-6 flex flex-wrap items-center gap-3 rounded-xl px-4 py-3 text-sm ring-1 <?= $bad ? 'bg-rose-50 text-rose-800 ring-rose-200' : 'bg-amber-50 text-amber-800 ring-amber-200' ?>" role="status">
-        <i class="bx <?= $bad ? 'bx-lock-alt' : 'bx-time-five' ?> text-lg"></i>
-        <span class="flex-1"><strong><?= $bad ? 'Lesemodus.' : ($lic['trial'] && !$soon ? 'Testlizenz.' : 'Lizenz.') ?></strong> <?= e($soon && $lic['status'] === 'active' ? 'Ihre Lizenz läuft am ' . date('d.m.Y', $lic['expires']) . ' ab.' : $lic['message']) ?></span>
-        <?php if ($me && $me['role'] === 'admin'): ?><a class="btn btn-secondary btn-sm" href="<?= e(url('admin/license')) ?>"><i class="bx bx-key"></i>Lizenz</a><?php endif; ?>
-      </div>
-    <?php endif; ?>
     <?= $content ?>
   </main>
 </div>

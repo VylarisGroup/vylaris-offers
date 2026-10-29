@@ -39,8 +39,8 @@ final class SignatureService
     public static function fromInput(array $in, array $customer, array &$errors): array
     {
         $mode = (string) ($in['signature_mode'] ?? 'none');
-        if (!isset(self::MODES[$mode]) || !License::has('signatures')) {
-            $mode = 'none';   // Funktion nicht in der Lizenz
+        if (!isset(self::MODES[$mode])) {
+            $mode = 'none';
         }
         $out = ['signature_mode' => $mode, 'require_signature' => $mode === 'none' ? 0 : 1, 'signer_name' => null, 'signer_email' => null];
         if ($mode !== 'strict') {

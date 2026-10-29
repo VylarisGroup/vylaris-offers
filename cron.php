@@ -14,9 +14,7 @@ if (PHP_SAPI !== 'cli') {
 
 require __DIR__ . '/app/bootstrap.php';
 
-License::refreshIfDue(true);
 fwrite(STDOUT, date('c') . ' – ' . UpdateService::cron() . "\n");
-fwrite(STDOUT, date('c') . ' – Lizenz: ' . License::status()['status'] . "\n");
 OfferService::sweepExpired();
 $n = SubscriptionService::runDue();
 Settings::set(['sub_last_run' => (string) time(), 'cron_last_run' => (string) time()]);

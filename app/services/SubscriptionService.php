@@ -73,9 +73,6 @@ final class SubscriptionService
     /** @return int Anzahl erzeugter Rechnungen */
     public static function runDue(?int $onlyId = null): int
     {
-        if (License::readonly() || !License::has('subscriptions')) {
-            return 0;   // ohne gültige Lizenz entstehen keine neuen Rechnungen
-        }
         $today = date('Y-m-d');
         $created = 0;
         $ids = DB::all(

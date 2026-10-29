@@ -17,9 +17,6 @@ final class PaymentService
     public static function enabled(): array
     {
         $out = [];
-        if (!License::has('payments')) {
-            return $out;
-        }
         if (Settings::get('pay_mollie_enabled') === '1' && (string) Settings::get('mollie_api_key') !== '') {
             $out[] = 'mollie';
         }

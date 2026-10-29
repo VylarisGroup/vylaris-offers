@@ -64,9 +64,6 @@ $r->post('/admin/changelog/seen', [ChangelogController::class, 'seen']);
 $r->get('/admin/update', [UpdateController::class, 'index']);
 $r->post('/admin/update', [UpdateController::class, 'save']);
 $r->post('/admin/update/{action}', [UpdateController::class, 'action']);
-$r->get('/admin/license', [LicenseController::class, 'index']);
-$r->post('/admin/license', [LicenseController::class, 'save']);
-$r->post('/admin/license/{action}', [LicenseController::class, 'action']);
 $r->get('/admin/health', [HealthController::class, 'index']);
 $r->post('/admin/health/token', [HealthController::class, 'token']);
 $r->get('/admin/portal', [PortalAdminController::class, 'index']);
@@ -231,5 +228,4 @@ $r->get('/api/v1/ping', [ApiController::class, 'ping']);
 $r->get('/api/v1/{type}', [ApiController::class, 'index']);
 $r->get('/api/v1/{type}/{id}', [ApiController::class, 'show']);
 
-License::gate(request_method(), Router::currentPath());
 $r->dispatch(request_method(), Router::currentPath());

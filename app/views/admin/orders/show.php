@@ -161,7 +161,7 @@ $physical = $order['area_type'] === 'physical';
           <?= Status::badge('invoice', Status::invoiceDisplay($iv)) ?></a>
       <?php endforeach; ?>
       <?php if ($order['status'] === 'cancelled'): ?><p class="mt-2 text-sm text-slate-500">Der Auftrag ist storniert.</p>
-      <?php elseif (!$ov['final'] && License::has('invoices')): ?>
+      <?php elseif (!$ov['final']): ?>
         <form method="post" action="<?= e(url('admin/orders/' . $order['id'] . '/invoice')) ?>" class="mt-4 space-y-3 border-t border-slate-100 pt-4" x-data><?= csrf_field() ?>
           <div class="grid grid-cols-2 gap-3">
             <div class="col-span-2"><label class="label">Art</label>
@@ -180,7 +180,7 @@ $physical = $order['area_type'] === 'physical';
       <?php endif; ?>
     </section>
     <?php $subRow = DB::one("SELECT * FROM subscriptions WHERE order_id = ? AND status <> 'ended' ORDER BY id DESC LIMIT 1", [$order['id']]); ?>
-    <?php if ($order['status'] !== 'cancelled' && License::has('subscriptions')): ?>
+    <?php if ($order['status'] !== 'cancelled'): ?>
     <section class="reveal reveal-delay-2 card p-5 sm:p-6">
       <h2 class="text-sm font-semibold text-slate-900">Abo / wiederkehrend</h2>
       <?php if ($subRow): ?>

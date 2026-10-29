@@ -20,8 +20,6 @@ $rows = [
     ['Benutzerverwaltung', 'Betrieb des Systems (Art. 6 Abs. 1 lit. b, f)',
      'Mitarbeitende', 'Name, E-Mail, Passwort-Hash, 2FA-Daten (verschlüsselt), Passkeys (öffentlicher Schlüssel)', 'Intern', 'Bis zur Löschung des Kontos'],
 ];
-$rows[] = ['Lizenzprüfung', 'Lizenzierung der Software (Art. 6 Abs. 1 lit. b, f)', 'Betreiber (Lizenznehmer)', 'Lizenzschlüssel, Geräte-ID (Domain + Installations-ID), Gerätename, IP-Adresse – keine Kundendaten',
-    'Lizenzserver ' . (parse_url(License::server(), PHP_URL_HOST) ?: ''), 'Nach Vorgabe des Lizenzanbieters'];
 if (class_exists('SsoController') && SsoController::active()) {
     $rows[] = ['Single Sign-On', 'Anmeldung der Mitarbeitenden (Art. 6 Abs. 1 lit. b, f)', 'Mitarbeitende', 'E-Mail, Name, Anbieter-Kennung (sub)',
         'Identitätsanbieter ' . (parse_url((string) Settings::get('sso_issuer'), PHP_URL_HOST) ?: ''), 'Bis zur Löschung des Kontos'];

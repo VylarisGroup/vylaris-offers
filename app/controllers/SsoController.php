@@ -4,10 +4,10 @@ declare(strict_types=1);
 /** Single Sign-On (OpenID Connect) für Mitarbeitende: Anmeldung, Rückkehr (Callback) und Einstellungen. */
 final class SsoController
 {
-    /** Ist SSO eingerichtet, eingeschaltet und von der Lizenz abgedeckt? */
+    /** Ist SSO eingerichtet und eingeschaltet? */
     public static function active(): bool
     {
-        return Settings::get('sso_enabled') === '1' && Settings::get('sso_issuer', '') !== '' && License::has('sso');
+        return Settings::get('sso_enabled') === '1' && Settings::get('sso_issuer', '') !== '';
     }
 
     /** Lokale Anmeldung gesperrt (nur über SSO)? */

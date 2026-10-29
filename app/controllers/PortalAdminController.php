@@ -9,8 +9,7 @@ final class PortalAdminController
         Auth::requireUser();
         $q = trim(input_str('q', 190));
         $diag = $q !== '' ? $this->diagnose(mb_strtolower($q)) : null;
-        $ev = License::status();
-        $checks = $this->checks($ev);
+        $checks = $this->checks();
         $stats = [
             'enabled' => (int) DB::val('SELECT COUNT(*) FROM customers WHERE portal_enabled = 1 AND anonymized_at IS NULL'),
             'disabled' => (int) DB::val('SELECT COUNT(*) FROM customers WHERE portal_enabled = 0 AND anonymized_at IS NULL'),
@@ -30,7 +29,7 @@ final class PortalAdminController
     }
 
     /** Systemprüfung: [Label, ok(bool|null), Hinweis]. */
-    private function checks(array $ev): array
+    private function checks(): array
     {
         $transport = (string) Settings::get('mail_transport', 'smtp');
         $mailOk = $transport === 'log' || $transport === 'file' || ($transport === 'smtp' && (string) Settings::get('smtp_host') !== '') || $transport === 'mail';
@@ -38,8 +37,6 @@ final class PortalAdminController
         $https = is_https();
         $base = (string) app_config('app.base_url', '');
         return [
-            ['Lizenz: Funktion «Kundenportal»', License::featureIn($ev['features'], 'portal'), License::featureIn($ev['features'], 'portal') ? 'In der Lizenz enthalten.' : 'Nicht in der Lizenz enthalten – das Portal (inkl. Anmeldung) liefert «Diese Funktion ist nicht verfügbar». Scope «portal» im Lizenz-Panel beim Tarif ergänzen, danach unter «Lizenz» erneut prüfen.'],
-            ['Lizenz: Modus', $ev['mode'] === 'full', $ev['mode'] === 'full' ? $ev['message'] : $ev['message'] . ' Im Lesemodus bleibt die Anmeldung möglich, Kunden können aber nichts senden oder annehmen.'],
             ['E-Mail-Versand', $mailOk, $mailOk ? 'Transport: ' . $transport . ($last ? ' · letzter Versand: ' . ($last['status'] === 'sent' ? 'ok' : 'FEHLGESCHLAGEN – ' . mb_substr((string) $last['error'], 0, 160)) : '') : 'Kein SMTP-Server eingetragen – Anmeldelinks können nicht versendet werden (Einstellungen → E-Mail).'],
             ['Basis-Adresse (Links in E-Mails)', $base !== '' && !str_contains($base, 'localhost'), $base !== '' ? 'Links zeigen auf ' . $base . ($https ? '' : ' (kein HTTPS erkannt)') : 'app.base_url fehlt in app/config.php – Links in E-Mails sind dann unbrauchbar.'],
             ['Kunden mit Portalzugang', (int) DB::val('SELECT COUNT(*) FROM customers WHERE portal_enabled = 1 AND anonymized_at IS NULL') > 0, 'Nur Kunden mit aktivem Zugang erhalten einen Anmeldelink (Kunde → «Kundenportal-Zugang»).'],

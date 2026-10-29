@@ -133,7 +133,6 @@ $editorConfig = [
         <label class="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
           <input type="checkbox" class="checkbox" name="no_expiry" value="1" data-valid-none <?= $f('no_expiry') ? 'checked' : '' ?>>Ohne Ablaufdatum
         </label>
-        <?php if (License::has('signatures')): ?>
         <fieldset class="border-t border-slate-100 pt-3" data-sigmode>
           <legend class="label">Unterschrift bei Annahme</legend>
           <?php $sm = $f('signature_mode') ?: 'none';
@@ -166,8 +165,7 @@ $editorConfig = [
             })();
           </script>
         </fieldset>
-        <?php endif; ?>
-      </div>
+              </div>
     </section>
 
     <section class="reveal reveal-delay-1 card" data-step="terms">

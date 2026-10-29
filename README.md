@@ -1,6 +1,6 @@
 # VylarisOffers – Offerten- & Auftragsmanagement
 
-**Version 1.7.2** – Neu in 1.7: Dokumentvorlagen (PDF-Layout), PWA, erweitertes Kundenportal. Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Lizenzprüfung, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
+**Version 1.8.0** – Neu in 1.8: ohne Lizenzprüfung nutzbar (alle Funktionen frei). Neu in 1.7: Dokumentvorlagen (PDF-Layout), PWA, erweitertes Kundenportal. Neu in 1.5.x/1.6: Assistenten (Schritt für Schritt), ausklappbare Seitenleiste, Änderungsprotokoll nach Updates, Single Sign-On (OpenID Connect), Updates aus GitHub-Releases, Schweizer MWST-System, DSGVO/DSG-Werkzeuge. Update-Quelle, Lizenzserver und Lizenz-Schlüssel sind fest vorgegeben.
 
 PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand – **ausgelegt auf die Schweiz** (MWST, QR-Rechnung, CHF). Ohne Framework, ohne Composer, ohne Build-Schritt – läuft auf jedem Shared Hosting mit Plesk.
 
@@ -18,9 +18,13 @@ PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand –
 8. [Wartung, Backup, Update](#8-wartung-backup-update)
 9. [Fehlerbehebung](#9-fehlerbehebung)
 10. [Projektstruktur](#10-projektstruktur)
-11. [Lizenz](#11-lizenz)
-12. [Single Sign-On (OpenID Connect)](#12-single-sign-on-openid-connect)
-13. [Updates aus GitHub](#13-updates-aus-github)
+11. [Single Sign-On (OpenID Connect)](#11-single-sign-on-openid-connect)
+12. [Updates aus GitHub](#12-updates-aus-github)
+13. [Änderungsprotokoll](#13-änderungsprotokoll)
+14. [Seitenleiste und Assistenten](#14-seitenleiste-und-assistenten)
+15. [Dokumentvorlagen](#15-dokumentvorlagen)
+16. [App (PWA)](#16-app-pwa)
+17. [Kundenportal: Nachrichten, Dokumente, Angaben](#17-kundenportal-nachrichten-dokumente-angaben)
 
 ---
 
@@ -56,9 +60,8 @@ PHP/MySQL-Anwendung für Offerten, Aufträge, Rechnungen, Kunden und Versand –
 
 | **PDF per E-Mail** | Offerten und Rechnungen werden als PDF angehängt (Einstellungen → E-Mail abschaltbar; ohne Anhang nur Link). |
 | **Audit-Log** | Anmeldungen, fehlgeschlagene Anmeldungen/2FA, Benutzer-, Einstellungs- und Steueränderungen, Exporte, Backups, Löschungen, Datenschutzaktionen, API/Webhook-Änderungen. Nur Administratoren. |
-| **Updates** | Neue Versionen aus GitHub-Releases per Klick oder automatisch (Cronjob), mit Sicherung und Rückgängig – siehe Abschnitt 13. |
-| **Single Sign-On** | Anmeldung der Mitarbeitenden per OpenID Connect – nur die Adresse des Anbieters nötig (Lizenzfunktion `sso`), siehe Abschnitt 12. |
-| **Lizenz** | Lizenzpflichtig (TRS License): Aktivierung, signierte Prüfung, Offline-Lizenz, Karenzfrist, Lesemodus, Funktions-Scopes (`features`) – siehe Abschnitt 11. |
+| **Updates** | Neue Versionen aus GitHub-Releases per Klick oder automatisch (Cronjob), mit Sicherung und Rückgängig – siehe Abschnitt 12. |
+| **Single Sign-On** | Anmeldung der Mitarbeitenden per OpenID Connect – nur die Adresse des Anbieters nötig, siehe Abschnitt 11. |
 | **Datenschutz (DSGVO/DSG)** | Kundenauskunft (JSON), Einschränkung, Anonymisierung, Portal-Selbstauskunft, automatische Aufbewahrungsfristen, Backup, Datenschutzerklärung, keine Drittanbieter-Anfragen. Siehe 7.2. |
 | **Integrationen** | Schreibgeschützte JSON-API mit Tokens, signierte Webhooks, Buchungsjournal (CSV). Siehe 5. |
 
@@ -70,7 +73,7 @@ Nicht enthalten (bewusst): Rückerstattung über den Zahlungsanbieter (wird dort
 
 ## 2. Voraussetzungen
 
-- PHP **8.1 oder neuer** (getestet mit 8.3; aktuelle Versionen empfohlen) mit den Erweiterungen `pdo_mysql`, `openssl`, `mbstring`, `json`, `sodium` (Lizenzprüfung, in PHP enthalten)
+- PHP **8.1 oder neuer** (getestet mit 8.3; aktuelle Versionen empfohlen) mit den Erweiterungen `pdo_mysql`, `openssl`, `mbstring`, `json`, `sodium` (Signaturprüfung für Single Sign-On, in PHP enthalten)
 - MySQL 5.7+ oder MariaDB 10.3+
 - Apache mit `mod_rewrite` (in Plesk Standard: „Apache + nginx“)
 - Ausgehende Verbindung zum SMTP-Server
@@ -476,7 +479,7 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 - *Administration → E-Mail-Protokoll* – jeder Versand mit Fehlermeldung des Servers
 - *Administration → Audit-Log* – sicherheitsrelevante Ereignisse
 
-**Update** – neue Dateien hochladen, dabei `app/config.php` und `storage/` **nicht überschreiben**. `setup.php` nicht erneut hochladen. Neue Tabellen und Spalten (Rechnungen, Abos, Anhänge, 2FA, Unterschrift, Audit-Log, API/Webhooks, Datenschutz, Online-Zahlungen, Passkeys, Zuständigkeiten, SSO-Verknüpfung, Dokumentvorlagen, Portal-Nachrichten – aktuell Schema-Version 13). Programm-Updates können auch aus GitHub bezogen werden (Abschnitt 13). Neue Tabellen und Spalten werden beim ersten Seitenaufruf automatisch angelegt (`schema_version`).
+**Update** – neue Dateien hochladen, dabei `app/config.php` und `storage/` **nicht überschreiben**. `setup.php` nicht erneut hochladen. Neue Tabellen und Spalten (Rechnungen, Abos, Anhänge, 2FA, Unterschrift, Audit-Log, API/Webhooks, Datenschutz, Online-Zahlungen, Passkeys, Zuständigkeiten, SSO-Verknüpfung, Dokumentvorlagen, Portal-Nachrichten – aktuell Schema-Version 14). Programm-Updates können auch aus GitHub bezogen werden (Abschnitt 12). Neue Tabellen und Spalten werden beim ersten Seitenaufruf automatisch angelegt (`schema_version`).
 
 **Neuinstallation** – `app/config.php` und `storage/install.lock` löschen, `setup.php` hochladen und aufrufen. Bestehende Tabellen bleiben erhalten (`CREATE TABLE IF NOT EXISTS`); existiert die Admin-E-Mail bereits, wird deren Passwort neu gesetzt.
 
@@ -503,7 +506,7 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 
 ```
 ├── index.php              Front-Controller und Routen
-├── cron.php               Cronjob (nur CLI): Lizenzprüfung, Updates, Abos, abgelaufene Offerten
+├── cron.php               Cronjob (nur CLI): Updates, Abos, abgelaufene Offerten
 ├── style.md               Styleguide: Design, Bibliotheken, Designentscheide
 ├── tests/run.php          Regressionstests für Steuer- und Rechenlogik (php tests/run.php)
 ├── setup.php              Installationsassistent (nach Installation löschen)
@@ -519,7 +522,7 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 │   ├── config.php         (vom Installer erstellt)
 │   ├── lib/               DB, Auth, Router, View, Mailer (SMTP), Calc, Schema, Crypto, Totp, WebAuthn, …
 │   ├── vendor/            FPDF 1.9 und chillerlan/php-qrcode 5 (beide MIT, ohne Composer eingebunden)
-│   ├── services/          License, OfferService, OrderService, InvoiceService, InquiryService, HealthService, SubscriptionService, PdfService, Brand, SiteBuilder, SwissQr, ReportService, AttachmentService, TaxService, Notifier, History
+│   ├── services/          OfferService, OrderService, InvoiceService, InquiryService, HealthService, SubscriptionService, PdfService, Brand, SiteBuilder, SwissQr, ReportService, AttachmentService, TaxService, Notifier, History
 │   ├── controllers/       Admin, Portal, öffentliche Offerte
 │   └── views/             Layouts, Partials, Seiten, E-Mail-Vorlage
 └── storage/               (per .htaccess gesperrt) logs/, mail/, uploads/ (Anhänge, Unterschriften), install.lock
@@ -542,46 +545,9 @@ Die Software unterstützt Sie bei der Umsetzung; die rechtliche Verantwortung (V
 
 ---
 
-## 11. Lizenz
+## 11. Single Sign-On (OpenID Connect)
 
-VylarisOffers ist **lizenzpflichtig** und prüft die Lizenz über die TRS-License-Prüf-API (`https://licence.vylaris.ch`, Dokumentation 1.3).
-
-**Einrichten**: im Installationsassistenten (Schritt «Firma», Abschnitt *Lizenz*) oder später unter *Lizenz* in der Administration: Lizenzschlüssel eintragen, *Speichern & aktivieren*. Lizenzserver (`https://licence.vylaris.ch`), Produkt-Kennung (`vylarisoffers`) und der öffentliche Ed25519-Schlüssel zur Prüfung der Serverantworten sind fest im Programm hinterlegt (`License::DEFAULT_SERVER`, `DEFAULT_PRODUCT`, `DEFAULT_PUBLIC_KEY`) und weder für Benutzer noch für Administratoren änderbar. Unter *Lizenz → Erweitert* lässt sich nur die Karenzfrist einstellen. Bestehende Installationen laufen nach dem Update im Lesemodus, bis ein Schlüssel hinterlegt ist.
-
-**Ablauf**: Die Aktivierung bindet die Installation an einen Geräteplatz; die **Geräte-ID** besteht aus Domain und zufälliger Installations-ID (Domainwechsel → erneut aktivieren). Danach wird alle 6 Stunden geprüft (beim Aufruf der Administration und per Cronjob), nach Fehlschlägen alle 15 Minuten. Jede Serverantwort wird mit dem fest hinterlegten öffentlichen Schlüssel auf ihre **Signatur** geprüft (libsodium); ausgewertet werden nur die signierten Daten (`payload`), und die gespeicherten Beweise werden bei jeder Anfrage neu verifiziert. *Gerät abmelden* gibt den Geräteplatz frei.
-
-**Server nicht erreichbar**: Es gilt zuerst die automatisch geholte **Offline-Lizenz** (signiert, an die Geräte-ID gebunden, bis zu 30 Tage gültig), danach eine einstellbare **Karenzfrist** (Standard 3 Tage). Eine Sperrung oder ein Ablauf wirkt nach der nächsten Prüfung sofort.
-
-**Lesemodus** (keine, ungültige, gesperrte oder abgelaufene Lizenz): Alles bleibt les- und exportierbar (Offerten, Aufträge, Rechnungen, PDF, CSV, Datenschutz-Auskunft, Backup, Einstellungen, Benutzer). Gesperrt sind neue Einträge und Änderungen bei Offerten, Aufträgen, Rechnungen, Abos, Kunden, Katalog, Webseite und Integrationen, die Annahme von Offerten, das Anfrageformular und die automatische Erzeugung von Abo-Rechnungen. Zahlungseingänge von Mollie/Stripe werden weiterhin verbucht.
-
-### Funktions-Scopes (`features` der Lizenz)
-
-Welche Funktionen freigeschaltet sind, bestimmt das Feld **`features`** der Lizenz bzw. des Tarifs im Lizenz-Panel. Offerten, Aufträge, Kunden, Katalog, Einstellungen, Benutzer, Audit-Log und Datenschutz sind immer enthalten. Nicht enthaltene Funktionen verschwinden aus der Navigation; ihre Seiten liefern HTTP 403 mit Hinweis (API: JSON `license`).
-
-| Scope | Funktion | Setzt voraus |
-|---|---|---|
-| `invoices` | Rechnungen, QR-Rechnung, Gutschriften, Skonto, Mahnungen, MWST-Prüfung | – |
-| `subscriptions` | Abos (wiederkehrende Rechnungen) | `invoices` |
-| `payments` | Online-Zahlung per Mollie/Stripe | `invoices` |
-| `reports` | Berichte, MWST-Abrechnung, Buchungsjournal, CSV-Export | – |
-| `api` | Lesende REST-API, API-Tokens | – |
-| `webhooks` | Webhooks an externe Systeme | – |
-| `portal` | Kundenportal | – |
-| `website` | Website-Baukasten, Anfrageformular, Anfragen | – |
-| `signatures` | Digitale Unterschrift bei der Annahme (sonst immer «Keine Unterschrift») | – |
-| `sso` | Single Sign-On per OpenID Connect (Abschnitt 12) | – |
-
-Neue Scopes: in `License::FEATURES` (Bezeichnung, Beschreibung, Abhängigkeiten) und `License::ROUTE_FEATURES` (Pfad → Scope) ergänzen; Ansichten prüfen mit `License::has('scope')`.
-
-**Datenschutz**: An den Lizenzserver gehen Lizenzschlüssel, Geräte-ID (Domain + Installations-ID), Gerätename (Firmenname) und die IP-Adresse – keine Kundendaten. Der Lizenzserver erscheint im *Verzeichnis der Verarbeitungstätigkeiten*.
-
-**Hinweis**: Eine Lizenzprüfung in PHP-Code, der beim Kunden liegt, ist eine vertragliche und organisatorische Hürde, kein technisch unumgehbarer Schutz. Die Signaturprüfung verhindert gefälschte Serverantworten und manipulierte Lizenzdaten in der Datenbank, nicht aber das Entfernen der Prüfung aus dem Code.
-
----
-
-## 12. Single Sign-On (OpenID Connect)
-
-Mitarbeitende können sich mit einem zentralen Konto anmelden (z. B. **Vylaris-Login** unter `https://vylaris.tech`). Voraussetzung: Die Lizenz enthält die Funktion **`sso`**. Ohne sie ist SSO inaktiv, die lokale Anmeldung gilt unverändert.
+Mitarbeitende können sich mit einem zentralen Konto anmelden (z. B. **Vylaris-Login** unter `https://vylaris.tech`).
 
 **Einrichten – nur eine Adresse**: *Einstellungen → Single Sign-On*, bei *Adresse des Anbieters* `https://vylaris.tech` eintragen (auch `vylaris.tech` oder die volle `…/.well-known/openid-configuration`-Adresse werden erkannt), *Verbindung testen*, Haken bei *Aktivieren*, speichern. Die Endpunkte werden über die Discovery-Adresse `…/.well-known/openid-configuration` gelesen. Unterstützt der Anbieter die dynamische Client-Registrierung (RFC 7591), wird die Anwendung automatisch angemeldet; Client-ID und Secret werden gespeichert (Secret verschlüsselt). Andernfalls die **Redirect-URI** `<Basis-URL>/admin/sso/callback` beim Anbieter eintragen und unter *Erweitert* Client-ID und Secret ergänzen. Im Installationsassistenten (Schritt «Firma») kann die Adresse bereits angegeben werden.
 
@@ -589,7 +555,7 @@ Mitarbeitende können sich mit einem zentralen Konto anmelden (z. B. **Vylaris-L
 
 **Zuordnung zu Benutzern**: zuerst über Anbieter + `sub` (stabile Kennung), beim ersten Login über die **verifizierte** E-Mail-Adresse (`email_verified=false` wird abgelehnt); danach ist das Konto fest verknüpft. Ein bereits mit einer anderen Kennung verknüpftes Konto wird nicht übernommen. Optional: Liste erlaubter E-Mail-Domains; *Konten automatisch anlegen* (Rolle «Team»; Administrator nur, wenn der Anbieter einen Gruppen-/Rollen-Claim liefert, der der eingestellten *Admin-Gruppe* entspricht).
 
-**Nur SSO**: Mit *Nur Single Sign-On erlauben* verschwinden Passwort- und Magic-Link-Anmeldung. **Notfallzugang** bei Ausfall des Anbieters: `/admin/login?local=1`. Wird die Lizenzfunktion `sso` entzogen, gilt automatisch wieder die lokale Anmeldung.
+**Nur SSO**: Mit *Nur Single Sign-On erlauben* verschwinden Passwort- und Magic-Link-Anmeldung. **Notfallzugang** bei Ausfall des Anbieters: `/admin/login?local=1`.
 
 **Datenschutz**: Der Anbieter erhält die Anmelde-Anfrage (Browser-Weiterleitung); übermittelt werden E-Mail, Name und Kennung (`sub`) der Mitarbeitenden. Der Anbieter steht im *Verzeichnis der Verarbeitungstätigkeiten*. Protokolliert werden `sso_login`, `sso_failed` und `sso_settings` im Audit-Log.
 
@@ -597,7 +563,7 @@ Mitarbeitende können sich mit einem zentralen Konto anmelden (z. B. **Vylaris-L
 
 ---
 
-## 13. Updates aus GitHub
+## 12. Updates aus GitHub
 
 Die Software kann sich aus einem GitHub-Repository aktualisieren (*Update* in der Administration, nur Administratoren).
 
@@ -621,19 +587,19 @@ Das Token wird nur an GitHub gesendet, nie an Weiterleitungsziele.
 
 **Sicherheit**: Wer ins Repository bzw. Release schreiben kann, kann Programmcode einspielen. GitHub-Konto mit 2FA schützen, Token nur lesend und nur für dieses Repository. Das Archiv wird gegen Pfad-Tricks (`..`, absolute Pfade) und überdimensionierte Inhalte geprüft; das Token wird nie an Weiterleitungsziele (Download-Server) gesendet.
 
-## 14. Änderungsprotokoll
+## 13. Änderungsprotokoll
 
 Nach einem Update erscheint beim ersten Aufruf des Admin-Bereichs ein Fenster «Neuigkeiten in Version X» (pro Benutzer einmal; Feld `users.changelog_seen`). Die Historie ist jederzeit unter `/admin/changelog` erreichbar (Link bei der Versionsnummer unten in der Navigation). Neu installierte Systeme und neu angelegte Benutzer sehen kein Fenster.
 
 Quelle ist `CHANGELOG.md` im Hauptordner: pro Version ein Abschnitt `## <Version> – <Datum>` mit `### Neu`, `### Verbessert`, `### Behoben` oder `### Hinweis` und Aufzählungspunkten (`**fett**`, `` `Code` ``). **Bei jedem Release muss `APP_VERSION` (in `app/bootstrap.php` und `setup.php`) erhöht und ein Eintrag oben in `CHANGELOG.md` ergänzt werden** – ein Test prüft, dass die aktuelle Version im Protokoll steht.
 
-## 15. Seitenleiste und Assistenten
+## 14. Seitenleiste und Assistenten
 
-**Seitenleiste.** Die Navigation ist in ausklappbare Gruppen gegliedert: *Verkauf* (Offerten, Aufträge, Rechnungen, Abos), *Kunden* (Anfragen, Kunden), *Katalog*, *Verwaltung* (Berichte, Benutzer, Webseite, Integrationen; nur Administratoren) und *System* (Einstellungen, Update, Lizenz, Systemstatus, E-Mail-Protokoll, Audit-Log; nur Administratoren). Die Gruppe der aktuellen Seite ist immer offen; sonst gilt die zuletzt gewählte Einstellung (pro Browser gemerkt, `localStorage`), standardmässig sind *Verkauf* und *Kunden* offen. Zugeklappte Gruppen zeigen offene Hinweise (neue Aufträge, überfällige Rechnungen …) als Zähler. Neben «Neue Offerte» öffnet der Pfeil ein Schnellmenü.
+**Seitenleiste.** Die Navigation ist in ausklappbare Gruppen gegliedert: *Verkauf* (Offerten, Aufträge, Rechnungen, Abos), *Kunden* (Anfragen, Kunden), *Katalog*, *Verwaltung* (Berichte, Benutzer, Webseite, Integrationen; nur Administratoren) und *System* (Einstellungen, Update, Systemstatus, E-Mail-Protokoll, Audit-Log; nur Administratoren). Die Gruppe der aktuellen Seite ist immer offen; sonst gilt die zuletzt gewählte Einstellung (pro Browser gemerkt, `localStorage`), standardmässig sind *Verkauf* und *Kunden* offen. Zugeklappte Gruppen zeigen offene Hinweise (neue Aufträge, überfällige Rechnungen …) als Zähler. Neben «Neue Offerte» öffnet der Pfeil ein Schnellmenü.
 
 **Assistenten.** Formulare für Kunde, Offerte, Benutzer, Produktbereich, Positionsvorlage, Steuervorlage und Versandart haben oben einen Umschalter **Formular | Assistent**. Der Assistent führt Schritt für Schritt durch dieselben Felder (Fortschrittsanzeige, Prüfung der Pflichtfelder pro Schritt, bei Offerten zusätzlich «mindestens eine Position», Zusammenfassung zum Schluss). Das normale Formular bleibt der Standard und unverändert nutzbar; der Assistent sendet an dieselbe Adresse. Direktlinks: `…/admin/offers/new?wizard=1`, `…/admin/customers/new?wizard=1`. Bei Fehlern springt der Assistent zum betroffenen Schritt. Technisch: `assets/js/wizard.js` – Formulare werden mit `data-wizard` (eigene Schritte via `data-step`) oder `data-wizard="auto"` (eine Frage pro Schritt) markiert; Details im Kopf der Datei und in `style.md`.
 
-## 16. Dokumentvorlagen
+## 15. Dokumentvorlagen
 
 *Katalog → Dokumentvorlagen* (nur Administratoren) steuert das **Aussehen** der PDF-Dokumente. Beträge, Texte und Steuerlogik bleiben unberührt.
 
@@ -643,7 +609,7 @@ Quelle ist `CHANGELOG.md` im Hauptordner: pro Version ein Abschnitt `## <Version
 - Der **QR-Zahlteil** der Rechnung folgt den Schweizer Vorgaben und bleibt immer unverändert.
 - Beim Versand und im öffentlichen Link gilt dieselbe Vorlage wie in der Vorschau – bereits versendete Dokumente ändern ihr Aussehen, wenn die Vorlage später angepasst wird.
 
-## 17. App (PWA)
+## 16. App (PWA)
 
 Administration (`/admin`) und Kundenportal (`/portal`) sind installierbare Web-Apps: eigenes Symbol (aus Logo und Markenfarbe), Vollbild ohne Browserleiste, Hinweisseite bei fehlender Verbindung. Der Browser bietet die Installation an (Schaltfläche «App installieren» in der Seitenleiste bzw. im Portal; unter iOS: Teilen → Zum Home-Bildschirm).
 
@@ -652,7 +618,7 @@ Administration (`/admin`) und Kundenportal (`/portal`) sind installierbare Web-A
 - **Einstellungen:** *Einstellungen → Branding → App (PWA)*: aktivieren/deaktivieren, Kurzname (max. 24 Zeichen). Beim Deaktivieren meldet sich der Service Worker ab und leert den Cache.
 - Das Symbol benötigt die PHP-Erweiterung GD (Standard bei Plesk).
 
-## 18. Kundenportal: Nachrichten, Dokumente, Angaben
+## 17. Kundenportal: Nachrichten, Dokumente, Angaben
 
 Kunden (Anmeldung per Link) sehen im Portal zusätzlich:
 
@@ -662,6 +628,6 @@ Kunden (Anmeldung per Link) sehen im Portal zusätzlich:
 
 **Datenschutz:** Nachrichten sind im Datenexport (Auskunft) enthalten und werden beim Einschränken, Anonymisieren oder Löschen eines Kunden entfernt.
 
-**Verwalten und Fehlersuche:** *Kunden → Kundenportal* zeigt die Systemprüfung (Lizenz-Funktion `portal`, E-Mail-Versand, Basis-Adresse), listet alle Kunden mit Zugang (an/aus, Anmeldelink senden, letzte Anmeldung) und prüft per E-Mail-Adresse, warum eine Anmeldung nicht funktioniert. Häufige Ursachen: Lizenz ohne Funktion `portal` (Portal liefert «Diese Funktion ist nicht verfügbar»), kein SMTP-Server eingetragen, Portalzugang beim Kunden ausgeschaltet, abweichende E-Mail-Adresse, Limit (3 Links pro 15 Minuten).
+**Verwalten und Fehlersuche:** *Kunden → Kundenportal* zeigt die Systemprüfung (E-Mail-Versand, Basis-Adresse, Kunden mit Zugang), listet alle Kunden mit Zugang (an/aus, Anmeldelink senden, letzte Anmeldung) und prüft per E-Mail-Adresse, warum eine Anmeldung nicht funktioniert. Häufige Ursachen: kein SMTP-Server eingetragen, Portalzugang beim Kunden ausgeschaltet, abweichende E-Mail-Adresse, Limit (3 Links pro 15 Minuten).
 
 **Hinweis «Powered by VylarisOffers»:** Unten links in der Seitenleiste der Administration steht ein fester Hinweis mit Link auf <https://vylaris.ch>. Er ist Teil des Produkts, nicht abschaltbar und nicht über das Branding änderbar. Das System setzt ihn bei jeder Ausgabe des Admin-Layouts selbst ein (`Brand::enforceWatermark`) und ersetzt veränderte oder entfernte Varianten.

@@ -95,71 +95,6 @@ $eq('IBAN CH gültig', SwissQr::validIban('CH9300762011623852957'), true);
 $eq('IBAN CH ungültig', SwissQr::validIban('CH9300762011623852958'), false);
 
 
-/* ---- Lizenzsystem (Signatur, Bewertung, Funktions-Scopes) */
-$kp = sodium_crypto_sign_keypair();
-$sk = sodium_crypto_sign_secretkey($kp);
-$pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode(hex2bin('302a300506032b6570032100') . sodium_crypto_sign_publickey($kp)), 64, "\n") . "-----END PUBLIC KEY-----\n";
-$signed = static function (array $d) use ($sk): array {
-    $p = json_encode($d, JSON_UNESCAPED_SLASHES);
-    return ['payload' => $p, 'signature' => base64_encode(sodium_crypto_sign_detached($p, $sk))];
-};
-$now = 1_800_000_000;
-$mk = static fn (array $over = [], array $lic = []) => array_replace(['valid' => true, 'code' => 'OK', 'ts' => $now - 60,
-    'license' => $lic + ['features' => ['invoices', 'payments', 'reports'], 'plan' => 'Pro', 'expiresAt' => null, 'trial' => false]], $over);
-$base = ['key' => 'VO-1', 'pem' => $pem, 'hwid' => 'h#1', 'net_error' => false, 'grace_days' => 3, 'offline' => null];
-$p = $signed($mk());
-$eq('Signatur gültig', License::verify($p['payload'], $p['signature'], $pem), true);
-$eq('Signatur manipuliert', License::verify($p['payload'] . ' ', $p['signature'], $pem), false);
-$eq('Falscher Schlüssel', License::verify($p['payload'], $p['signature'], str_replace('MCow', 'MCoz', $pem)), false);
-$eq('PEM ungültig', License::pemToRaw('-----BEGIN PUBLIC KEY-----AAAA-----END PUBLIC KEY-----'), null);
-$ev = License::evaluate($base + ['proof' => $p], $now);
-$eq('Lizenz aktiv', [$ev['status'], $ev['mode']], ['active', 'full']);
-$eq('Features übernommen', $ev['features'], ['invoices', 'payments', 'reports']);
-$eq('Ohne Schlüssel → Lesemodus', License::evaluate(['key' => ''] + $base + ['proof' => $p], $now)['mode'], 'readonly');
-$eq('Ohne Beweis → Lesemodus', License::evaluate($base + ['proof' => null], $now)['status'], 'unverified');
-$forged = ['payload' => $p['payload'], 'signature' => base64_encode(str_repeat('x', 64))];
-$eq('Gefälschter Beweis', License::evaluate($base + ['proof' => $forged], $now)['mode'], 'readonly');
-$eq('Fremder Schlüssel im Beweis', License::evaluate(['pem' => ''] + $base + ['proof' => $p], $now)['mode'], 'readonly');
-foreach (['BLOCKED' => 'blocked', 'EXPIRED' => 'expired', 'NOT_FOUND' => 'not_found', 'WRONG_PRODUCT' => 'wrong_product', 'DEVICE_LIMIT' => 'device_limit', 'NOT_ACTIVATED' => 'not_activated'] as $code => $st) {
-    $e = License::evaluate($base + ['proof' => $signed($mk(['valid' => false, 'code' => $code]))], $now);
-    $eq("Code $code", [$e['status'], $e['mode']], [$st, 'readonly']);
-}
-$eq('Ablaufdatum vergangen', License::evaluate($base + ['proof' => $signed($mk([], ['expiresAt' => gmdate('c', $now - 10)]))], $now)['status'], 'expired');
-$eq('Ablaufdatum Zukunft', License::evaluate($base + ['proof' => $signed($mk([], ['expiresAt' => gmdate('c', $now + 99999)]))], $now)['mode'], 'full');
-$old = $signed($mk(['ts' => $now - 2 * 86400]));
-$eq('2 Tage alt → Karenzfrist', License::evaluate($base + ['proof' => $old], $now)['status'], 'grace');
-$eq('Server nicht erreichbar → Karenzfrist', License::evaluate(['net_error' => true] + $base + ['proof' => $p], $now)['status'], 'grace');
-$eq('Karenzfrist abgelaufen', License::evaluate(['grace_days' => 1] + $base + ['proof' => $old], $now)['status'], 'unreachable');
-$off = static fn (array $o) => $signed($o + ['v' => 1, 'type' => 'offline', 'key' => 'VO-1', 'hwid' => 'h#1', 'validUntil' => gmdate('c', $now + 86400), 'licenseExpiresAt' => null]);
-$eq('Offline-Lizenz gültig', License::evaluate(['grace_days' => 0, 'offline' => $off([])] + $base + ['proof' => $old], $now)['status'], 'offline');
-$eq('Offline-Lizenz falsches Gerät', License::evaluate(['grace_days' => 0, 'offline' => $off(['hwid' => 'h#2'])] + $base + ['proof' => $old], $now)['status'], 'unreachable');
-$eq('Offline-Lizenz abgelaufen', License::evaluate(['grace_days' => 0, 'offline' => $off(['validUntil' => gmdate('c', $now - 5)])] + $base + ['proof' => $old], $now)['status'], 'unreachable');
-$eq('Offline-Lizenz anderer Schlüssel', License::evaluate(['grace_days' => 0, 'offline' => $off(['key' => 'VO-2'])] + $base + ['proof' => $old], $now)['status'], 'unreachable');
-$eq('Gesperrt trotz Offline-Lizenz', License::evaluate(['net_error' => true, 'offline' => $off([])] + $base + ['proof' => $signed($mk(['valid' => false, 'code' => 'BLOCKED']))], $now)['status'], 'blocked');
-$eq('Scope vorhanden', License::featureIn(['invoices'], 'invoices'), true);
-$eq('Scope fehlt', License::featureIn(['invoices'], 'api'), false);
-$eq('Scope Abhängigkeit (Abos brauchen Rechnungen)', License::featureIn(['subscriptions'], 'subscriptions'), false);
-$eq('Scope Abhängigkeit erfüllt', License::featureIn(['subscriptions', 'invoices'], 'subscriptions'), true);
-$eq('Unbekannter Scope', License::featureIn(['x'], 'x'), false);
-$eq('Kern immer', License::featureIn([], 'core'), true);
-$full = ['mode' => 'full', 'features' => ['invoices']];
-$ro = ['mode' => 'readonly', 'features' => ['invoices', 'api']];
-$eq('Route Rechnungen → invoices', License::featureForPath('/admin/invoices/5'), 'invoices');
-$eq('Route Abo-Anlage → subscriptions', License::featureForPath('/admin/orders/9/subscription'), 'subscriptions');
-$eq('Route API → api', License::featureForPath('/api/v1/invoices'), 'api');
-$eq('Route API ping frei', License::featureForPath('/api/v1/ping'), null);
-$eq('Route Offerten frei', License::featureForPath('/admin/offers'), null);
-$eq('Funktion fehlt → gesperrt', License::decide('GET', '/admin/subscriptions', $full), ['reason' => 'feature', 'feature' => 'subscriptions']);
-$eq('Funktion vorhanden → erlaubt', License::decide('GET', '/admin/invoices', $full), null);
-$eq('Lesemodus: POST Offerte gesperrt', License::decide('POST', '/admin/offers', $ro)['reason'] ?? null, 'readonly');
-$eq('Lesemodus: GET Offerte erlaubt', License::decide('GET', '/admin/offers/3', $ro), null);
-$eq('Lesemodus: DSGVO-Export erlaubt', License::decide('POST', '/admin/customers/4/privacy-export', $ro), null);
-$eq('Lesemodus: Backup erlaubt', License::decide('POST', '/admin/backup', $ro), null);
-$eq('Lesemodus: Lizenz-Seite erlaubt', License::decide('POST', '/admin/license', ['mode' => 'readonly', 'features' => []]), null);
-$eq('Lesemodus: Annahme gesperrt', License::decide('POST', '/o/abc/accept', $ro)['reason'] ?? null, 'readonly');
-$eq('Webhook Zahlungsanbieter nie gesperrt', License::decide('POST', '/webhooks/stripe', ['mode' => 'readonly', 'features' => []]), null);
-$eq('Login nie gesperrt', License::decide('POST', '/admin/login', ['mode' => 'readonly', 'features' => []]), null);
-
 // ---------------------------------------------------------------- SSO / OpenID Connect
 $b = static fn (string $x) => Oidc::b64uEncode($x);
 $jwt = static function (array $h, array $c, callable $sign) use ($b): string {
@@ -205,10 +140,6 @@ $eq('Adresse ohne Schema', Oidc::normalizeIssuer('vylaris.tech'), 'https://vylar
 $eq('Adresse http extern abgelehnt', Oidc::normalizeIssuer('http://vylaris.tech'), null);
 $eq('Adresse http localhost ok', Oidc::normalizeIssuer('http://localhost:8096'), 'http://localhost:8096');
 $eq('PKCE RFC 7636', Oidc::pkceChallenge('dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'), 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
-$eq('Eingebauter Lizenz-Schlüssel gültig', strlen((string) License::pemToRaw(License::DEFAULT_PUBLIC_KEY)), 32);
-$eq('Scope sso vorhanden', License::featureIn(['sso'], 'sso'), true);
-$eq('Scope sso fehlt', License::featureIn(['invoices'], 'sso'), false);
-$eq('Route SSO → sso', License::featureForPath('/admin/sso/login'), 'sso');
 
 // ---------------------------------------------------------------- Update (GitHub-Releases)
 $eq('Repo owner/repo', UpdateService::parseRepo('vylaris/offers'), 'vylaris/offers');
@@ -303,8 +234,6 @@ foreach (['messages', 'documents', 'profile'] as $v) {
 $eq('Admin: Dokumentvorlagen im Menü', str_contains((string) file_get_contents(APP_DIR . '/views/layouts/admin.php'), 'admin/doc-templates'), true);
 
 $eq('Portal-Verwaltung vorhanden', is_file(APP_DIR . '/views/admin/portal/index.php') && is_file(APP_DIR . '/controllers/PortalAdminController.php'), true);
-$eq('Lizenz: Admin-Nachrichten brauchen portal', License::featureForPath('/admin/messages/3'), 'portal');
-$eq('Lizenz: Portalverwaltung bleibt erreichbar', License::featureForPath('/admin/portal'), null);
 
 $wm = Brand::watermark();
 $eq('Watermark: Text und Link', str_contains($wm, 'Powered by') && str_contains($wm, 'href="https://vylaris.ch"') && str_contains($wm, 'VylarisOffers'), true);
@@ -313,6 +242,19 @@ $eq('Watermark: ohne Platzhalter fest eingefügt', str_contains(Brand::enforceWa
 $eq('Watermark: manipulierte Variante ersetzt', substr_count(Brand::enforceWatermark('<aside><div data-powered-by style="display:none">Powered by X</div>' . Brand::WATERMARK_SLOT . '</aside></body>'), 'data-powered-by'), 1);
 $eq('Watermark: Layout nutzt Platzhalter', str_contains((string) file_get_contents(APP_DIR . '/views/layouts/admin.php'), 'Brand::WATERMARK_SLOT'), true);
 $eq('Watermark: View erzwingt sie für das Admin-Layout', str_contains((string) file_get_contents(APP_DIR . '/lib/View.php'), 'enforceWatermark'), true);
+
+// Kein Lizenzsystem (ab 1.8.0)
+$eq('Keine Lizenz-Klasse', class_exists('License'), false);
+$eq('Keine Lizenz-Seite', is_dir(APP_DIR . '/views/admin/license') || is_file(APP_DIR . '/controllers/LicenseController.php'), false);
+$refs = 0;
+foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(APP_DIR . '/..', FilesystemIterator::SKIP_DOTS)) as $f) {
+    $path = $f->getPathname();
+    if (!str_ends_with($path, '.php') || str_contains($path, '/app/vendor/') || str_contains($path, '/storage/') || str_contains($path, '/tests/')) {
+        continue;
+    }
+    $refs += preg_match('/License::|LicenseController|admin\/license/', (string) file_get_contents($path));
+}
+$eq('Keine Verweise auf das Lizenzsystem im Code', $refs, 0);
 
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

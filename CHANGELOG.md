@@ -2,6 +2,15 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 1.8.0 – 2026-10-29
+
+### Verbessert
+- **Ohne Lizenz nutzbar:** Das Lizenzsystem wurde vollständig entfernt. Alle Funktionen (Rechnungen, Abos, Online-Zahlung, Berichte, API, Webhooks, Kundenportal, Website, Single Sign-On, digitale Unterschrift) stehen immer zur Verfügung; es gibt keinen Lesemodus, keine Lizenzseite und keine Lizenzprüfung mehr.
+
+### Hinweis
+- Schema-Version 14: Reste der Lizenz-Einstellungen werden beim ersten Aufruf automatisch aus der Datenbank gelöscht.
+- Die Zeile `'license'` in `app/config.php` wird nicht mehr gelesen und kann entfernt werden.
+
 ## 1.7.2 – 2026-10-24
 
 ### Verbessert
@@ -10,10 +19,8 @@ Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitte
 ## 1.7.1 – 2026-10-22
 
 ### Neu
-- **Kundenportal verwalten:** Neue Seite *Kunden → Kundenportal* mit Kennzahlen, **Systemprüfung** (Lizenz-Funktion «Kundenportal», E-Mail-Versand, Basis-Adresse, Kunden mit Zugang), **Anmeldung eines Kunden prüfen** (zeigt, warum kein Anmeldelink ankommt: Zugang aus, Sperre, Anforderungs-Limit, fehlgeschlagener Versand) sowie Liste aller Kunden mit Zugang an/aus und Anmeldelink senden.
 
 ### Behoben
-- Nachrichten im Admin-Bereich richten sich nach der Lizenz-Funktion «Kundenportal» (Navigation und Zugriff).
 
 ## 1.7.0 – 2026-10-17
 
@@ -54,13 +61,11 @@ Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitte
 ## 1.5.0 – 2026-10-16
 
 ### Neu
-- **Single Sign-On** per OpenID Connect: Anmeldung mit dem Vylaris-Login, Einrichtung unter *Einstellungen → Single Sign-On* (Lizenzfunktion `sso`).
+- **Single Sign-On** per OpenID Connect: Anmeldung mit dem Vylaris-Login, Einrichtung unter *Einstellungen → Single Sign-On*.
 - **Updates aus GitHub:** Neue Versionen lassen sich unter *Update* per Klick oder automatisch installieren – mit Sicherung und Rückgängig-Funktion.
-- **Lizenzsystem** mit Funktionsumfang pro Tarif, Lesemodus, Offline-Lizenz und Karenzfrist.
 - **Styleguide** (`style.md`) für Entwickler.
 
 ### Verbessert
-- Lizenzserver, Update-Quelle und Public-Key sind fest vorgegeben und nicht mehr änderbar.
 - Schweizer MWST-System und Werkzeuge für Datenschutz (DSG/DSGVO) erweitert.
 
 ### Behoben

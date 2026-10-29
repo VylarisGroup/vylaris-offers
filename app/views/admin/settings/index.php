@@ -3,12 +3,7 @@ $title = 'Einstellungen';
 $subtitle = 'Firmendaten, Offerten-Standards und E-Mail-Versand.';
 include APP_DIR . '/views/partials/page-header.php';
 $tabs = ['company' => ['Firma', 'bx-buildings'], 'offers' => ['Offerten', 'bx-file'], 'invoices' => ['Rechnungen', 'bx-receipt'], 'payments' => ['Zahlungen', 'bx-credit-card'], 'branding' => ['Branding', 'bx-palette'], 'mail' => ['E-Mail', 'bx-envelope'], 'privacy' => ['Datenschutz', 'bx-shield-alt-2']];
-if (License::has('sso')) {
-    $tabs['sso'] = ['Single Sign-On', 'bx-key'];
-}
-if (!License::has('payments')) {
-    unset($tabs['payments']);
-}
+$tabs['sso'] = ['Single Sign-On', 'bx-key'];
 $tab = isset($tabs[$tab]) ? $tab : 'company';
 $v = static fn(string $k) => e($s[$k] ?? '');
 ?>

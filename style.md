@@ -195,13 +195,11 @@ Seitenkopf: `partials/page-header.php` (Zurück-Link, Titel, Untertitel, Aktione
 
 ### 5.1 Admin-Navigation
 
-- Gruppiert in **Hauptbereich** (Dashboard, Offerten, Anfragen, Aufträge, Rechnungen, Abos, Kunden), **Katalog** (Produktbereiche, Positionsvorlagen, Steuervorlagen, Versandarten) und **System** (nur Administratoren: Berichte, Benutzer, Webseite, Einstellungen, **Update**, Lizenz, E-Mail-Protokoll, Audit-Log, Integrationen, Systemstatus).
-- Menüpunkte, deren Lizenzfunktion fehlt (z. B. Berichte ohne Scope `reports`), werden **ausgeblendet**, nicht ausgegraut – die Oberfläche zeigt nur, was nutzbar ist.
-- Kleine Zähler rechts im Menüpunkt: neue Anfragen, neue Aufträge, überfällige Rechnungen; ausserdem Systemstatus (Anzahl Probleme), Lizenz (`!` im Lesemodus), Update (`●` wenn eine neue Version bereitsteht).
+- Gruppiert in **Hauptbereich** (Dashboard, Offerten, Anfragen, Aufträge, Rechnungen, Abos, Kunden), **Katalog** (Produktbereiche, Positionsvorlagen, Steuervorlagen, Versandarten) und **System** (nur Administratoren: Berichte, Benutzer, Webseite, Einstellungen, **Update**, E-Mail-Protokoll, Audit-Log, Integrationen, Systemstatus).
+- Kleine Zähler rechts im Menüpunkt: neue Anfragen, neue Aufträge, überfällige Rechnungen; ausserdem Systemstatus (Anzahl Probleme), Update (`●` wenn eine neue Version bereitsteht).
 - Aktiver Punkt: `is-active` (Markentönung).
 - Mobil: Seitenleiste gleitet von links herein (`translateX`, 300 ms), abgedunkelter Hintergrund schliesst sie wieder.
 - Ganz unten in der Seitenleiste steht der Hinweis «Powered by VylarisOffers» (`Brand::POWERED_BY`) – die einzige feste Kennzeichnung; Firmenname, Logo und Farbe sind sonst vollständig anpassbar.
-- Oberhalb des Inhalts erscheint bei Lizenzproblemen (Lesemodus, bald ablaufend, Offline/Karenzfrist, Testlizenz) ein farbiges Banner (Rose bzw. Amber, `role="alert"`-Muster) mit Link zur Lizenzseite.
 
 ### 5.2 Typische Seitenmuster
 
@@ -209,7 +207,7 @@ Seitenkopf: `partials/page-header.php` (Zurück-Link, Titel, Untertitel, Aktione
 - **Detail:** Seitenkopf mit Statusbadge und Aktionen → zweispaltig (`xl:grid-cols-3`: 2/3 Inhalt, 1/3 Seitenspalte mit Zusammenfassung, Verlauf/Timeline).
 - **Formular:** Karten pro Thema, Felder im 6-Spalten-Raster (`sm:grid-cols-6`, Felder spannen `sm:col-span-2/3/4/6`), Speichern-Button rechts unten.
 - **Dashboard:** Kennzahlen-Kacheln (`kpi-icon` + grosse Zahl), Balkendiagramm als reines HTML/CSS (`.bar` mit Wachstumsanimation), Listen «Neueste Offerten», «Überfällige Rechnungen».
-- **Einstellungen:** Tab-Navigation (`?tab=…`: Firma, Offerten, Rechnungen, Zahlungen, Branding, E-Mail, Datenschutz sowie – lizenzabhängig – Single Sign-On), pro Tab ein Formular.
+- **Einstellungen:** Tab-Navigation (`?tab=…`: Firma, Offerten, Rechnungen, Zahlungen, Branding, E-Mail, Datenschutz sowie Single Sign-On), pro Tab ein Formular.
 
 ---
 
@@ -385,10 +383,6 @@ Gestaltungsregeln:
 **Entscheid:** Text, Farbe, Icon pro Status an einer Stelle.
 **Warum:** Konsistenz (ein Status sieht überall gleich aus) und einfache Erweiterung; Übersetzungen/Anpassungen an einem Ort.
 
-### 13.8 Lizenzgesteuerte Navigation: ausblenden statt ausgrauen
-**Entscheid:** Nicht lizenzierte Bereiche verschwinden aus dem Menü.
-**Warum:** Ruhigere Oberfläche; Nutzer sollen nicht mit gesperrten Funktionen frustriert werden. Direktaufrufe liefern eine verständliche Meldung (HTTP 403 mit Hinweis). Im Lesemodus bleibt alles sichtbar und lesbar – nur Schreibaktionen sind gesperrt, mit klarem Banner.
-
 ### 13.9 Zwei Spalten im Detail, Karten als Gliederung
 **Entscheid:** Detailseiten: 2/3 Inhalt + 1/3 Seitenspalte; alles in Karten.
 **Warum:** Hauptinhalt (Positionen, Texte) bekommt Platz; Kontext (Status, Kunde, Verlauf) bleibt griffbereit. Karten bilden klare Lesezonen, auf Mobilgeräten stapeln sie sich.
@@ -413,8 +407,8 @@ Gestaltungsregeln:
 **Entscheid:** Kurze, weiche Übergänge, Respekt vor `prefers-reduced-motion`.
 **Warum:** Rückmeldung (Klick, Laden, neue Zeile) ohne Ablenkung; Rücksicht auf Menschen mit Bewegungsempfindlichkeit.
 
-### 13.15 Update-/Lizenzseiten im gleichen Stil
-**Entscheid:** Auch Systembereiche (Update, Lizenz, Systemstatus) nutzen Karten, Badges und Standardbuttons.
+### 13.15 Update-Seiten im gleichen Stil
+**Entscheid:** Auch Systembereiche (Update, Systemstatus) nutzen Karten, Badges und Standardbuttons.
 **Warum:** Keine «Technikinsel»; Administratoren erkennen Muster wieder. Kritische Aktionen (Update installieren, Gerät abmelden) laufen über den **Bestätigungsdialog** (`data-confirm`).
 
 ---
