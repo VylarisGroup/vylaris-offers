@@ -111,7 +111,12 @@ final class ApiController
             $data['tax_breakdown'] = json_decode((string) $row['tax_breakdown'], true) ?: [];
             $itemsTable = $type === 'invoices' ? 'invoice_items' : 'offer_items';
             $fk = $type === 'invoices' ? 'invoice_id' : 'offer_id';
-            $data['items'] = DB::all("SELECT position, title, description, quantity, unit, unit_price, discount_type, discount_value, tax_rate, tax_label, line_subtotal, line_discount, line_total FROM $itemsTable WHERE $fk = ? ORDER BY position", [$row['id']]);
+            $data['items'] = DB::all("SELECT position, title, description, quantity, unit, unit_price, discount_type, discount_value, tax_rate, tax_label, line_subtotal, line_discount, line_total, image FROM $itemsTable WHERE $fk = ? ORDER BY position", [$row['id']]);
+            foreach ($data['items'] as &$apiIt) {
+                $apiIt['image_url'] = ItemImage::url($apiIt['image'] ?? null);
+                unset($apiIt['image']);
+            }
+            unset($apiIt);
         }
         if ($type === 'invoices') {
             $data['deductions'] = json_decode((string) $row['deductions'], true) ?: [];

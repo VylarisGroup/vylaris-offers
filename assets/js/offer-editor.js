@@ -48,6 +48,43 @@
     return html;
   };
 
+  /* ------------------------------------------------ Positionsbilder */
+  const imgUrl = (name) => cfg.imgBase + name;
+  const imgInner = (name) => name
+    ? `<img src="${esc(imgUrl(name))}" alt="" class="size-full object-cover" loading="lazy">`
+    : '<i class="bx bx-image-add text-xl text-slate-400"></i>';
+  const imgHtml = (id, name) => `
+    <div class="relative shrink-0" data-img>
+      <input type="hidden" name="items[${id}][image]" value="${esc(name || '')}">
+      <input type="file" class="hidden" accept="image/png,image/jpeg,image/webp,image/gif" data-img-file>
+      <button type="button" class="grid size-11 place-items-center overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200 transition hover:ring-brand-400" data-img-pick data-tip="${name ? 'Bild ändern' : 'Bild hinzufügen'}" aria-label="Positionsbild">${imgInner(name)}</button>
+      <button type="button" class="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-white text-slate-500 shadow ring-1 ring-slate-200 hover:text-rose-600 ${name ? '' : 'hidden'}" data-img-clear aria-label="Bild entfernen"><i class="bx bx-x text-sm"></i></button>
+    </div>`;
+  const setImg = (wrap, name) => {
+    $('input[type=hidden]', wrap).value = name || '';
+    const b = $('[data-img-pick]', wrap);
+    b.innerHTML = imgInner(name);
+    b.dataset.tip = name ? 'Bild ändern' : 'Bild hinzufügen';
+    $('[data-img-clear]', wrap).classList.toggle('hidden', !name);
+  };
+  const uploadImg = async (wrap, file) => {
+    const b = $('[data-img-pick]', wrap);
+    if (file.size > 8 * 1024 * 1024) { window.toast('Das Bild ist zu gross (max. 8 MB).', 'error'); return; }
+    b.innerHTML = '<i class="bx bx-loader-alt bx-spin text-xl text-slate-400"></i>';
+    const body = new FormData();
+    body.append('_csrf', document.querySelector('meta[name="csrf-token"]').content);
+    body.append('image', file);
+    try {
+      const res = await fetch(cfg.imgUpload, { method: 'POST', body, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Upload fehlgeschlagen.');
+      setImg(wrap, json.name);
+    } catch (err) {
+      setImg(wrap, $('input[type=hidden]', wrap).value);
+      window.toast(err.message || 'Upload fehlgeschlagen.', 'error');
+    }
+  };
+
   /* ------------------------------------------------ Positionen */
   const rowHtml = (id, d) => `
     <div class="item-row group/row relative px-4 py-5 sm:px-6" data-row="${id}">
@@ -58,8 +95,9 @@
           <button type="button" class="btn btn-ghost btn-icon size-7 opacity-60 hover:opacity-100" data-move="1" data-tip="Nach unten" aria-label="Nach unten"><i class="bx bx-chevron-down"></i></button>
         </div>
         <div class="grid min-w-0 flex-1 gap-3 sm:grid-cols-12">
-          <div class="sm:col-span-12">
-            <input class="input font-medium" name="items[${id}][title]" value="${esc(d.title)}" placeholder="Titel der Position *" maxlength="190" aria-label="Titel">
+          <div class="flex items-start gap-2 sm:col-span-12">
+            <input class="input min-w-0 flex-1 font-medium" name="items[${id}][title]" value="${esc(d.title)}" placeholder="Titel der Position *" maxlength="190" aria-label="Titel">
+            ${imgHtml(id, d.image)}
           </div>
           <div class="sm:col-span-12">
             <textarea class="input !min-h-[44px] text-[13px]" rows="1" name="items[${id}][description]" placeholder="Beschreibung (optional)" aria-label="Beschreibung" data-autogrow>${esc(d.description)}</textarea>
@@ -120,7 +158,7 @@
 
   const rowData = (row) => {
     const get = (f) => { const el = $(`[name$="[${f}]"]`, row); return el ? el.value : ''; };
-    return { title: get('title'), description: get('description'), quantity: get('quantity'), unit: get('unit'), unit_price: get('unit_price'), discount_type: get('discount_type'), discount_value: get('discount_value'), tax: get('tax') };
+    return { title: get('title'), description: get('description'), quantity: get('quantity'), unit: get('unit'), unit_price: get('unit_price'), image: get('image'), discount_type: get('discount_type'), discount_value: get('discount_value'), tax: get('tax') };
   };
 
   const autogrow = (ta) => {
@@ -278,7 +316,7 @@
     const body = new FormData();
     body.append('_csrf', document.querySelector('meta[name="csrf-token"]').content);
     body.append('title', d.title); body.append('description', d.description); body.append('unit', d.unit);
-    body.append('unit_price', d.unit_price);
+    body.append('unit_price', d.unit_price); if (d.image) body.append('image', d.image);
     if (d.tax && d.tax !== 'default') body.append('tax_template_id', d.tax);
     const area = $('[data-area]:checked', form); if (area) body.append('product_area_id', area.value);
     try {
@@ -302,12 +340,21 @@
       if (m) { $('[data-shipping-cost]', form).value = m.cost.toFixed(2); recalc(); }
     } else if (e.target.matches('[data-calc]')) recalc();
   });
+  form.addEventListener('change', (e) => {
+    if (!e.target.matches('[data-img-file]')) return;
+    const f = e.target.files[0]; e.target.value = '';
+    if (f) uploadImg(e.target.closest('[data-img]'), f);
+  });
   $('[data-shipping-method]', form).addEventListener('input', (e) => {
     const m = cfg.shipping.find((s) => s.name === e.target.value);
     if (m) { $('[data-shipping-cost]', form).value = m.cost.toFixed(2); recalc(); }
   });
 
   form.addEventListener('click', (e) => {
+    const pick = e.target.closest('[data-img-pick]');
+    if (pick) { $('[data-img-file]', pick.closest('[data-img]')).click(); return; }
+    const clr = e.target.closest('[data-img-clear]');
+    if (clr) { setImg(clr.closest('[data-img]'), ''); return; }
     if (e.target.closest('[data-add-item]')) {
       const row = addRow({});
       $('input', row).focus();
@@ -343,7 +390,7 @@
       // Leere erste Zeile ersetzen statt eine weitere hinzuzufügen.
       const rows = $$('[data-row]', list);
       const empty = rows.find((r) => { const d = rowData(r); return !d.title && !d.unit_price; });
-      const data = { title: t.title, description: t.description || '', quantity: '1', unit: t.unit, unit_price: Number(t.unit_price).toFixed(2), tax: t.tax || 'default' };
+      const data = { title: t.title, description: t.description || '', quantity: '1', unit: t.unit, unit_price: Number(t.unit_price).toFixed(2), tax: t.tax || 'default', image: t.image || '' };
       const newRow = addRow(data, empty || null);
       if (empty) empty.remove();
       renumber(); recalc();
@@ -366,7 +413,7 @@
   };
   const applyTpl = (row, t) => {
     const set = (f, v) => { const el = $(`[name$="[${f}]"]`, row); if (el) el.value = v; };
-    set('title', t.title); set('description', t.description || ''); set('unit', t.unit || 'Stk.'); set('unit_price', Number(t.unit_price).toFixed(2));
+    set('title', t.title); set('description', t.description || ''); { const w = $('[data-img]', row); if (w) setImg(w, t.image || ''); } set('unit', t.unit || 'Stk.'); set('unit_price', Number(t.unit_price).toFixed(2));
     const taxSel = $('[name$="[tax]"]', row);
     if (taxSel && [...taxSel.options].some((o) => o.value === String(t.tax || 'default'))) taxSel.value = String(t.tax || 'default');
     autogrow($('[data-autogrow]', row)); recalc(); closeSug();

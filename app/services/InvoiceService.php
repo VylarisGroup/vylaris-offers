@@ -592,6 +592,7 @@ final class InvoiceService
                 'discount_type' => $it['discount_type'] ?? 'none', 'discount_value' => $it['discount_value'] ?? 0,
                 'tax_template_id' => $it['tax_template_id'] ?? null, 'tax_rate' => $it['tax_rate'], 'tax_label' => $it['tax_label'] ?? null,
                 'line_subtotal' => $it['line_subtotal'], 'line_discount' => $it['line_discount'], 'line_total' => $it['line_total'],
+                'image' => ItemImage::clean($it['image'] ?? null),
             ]);
         }
         $ref = SwissQr::referenceFor(['id' => $id, 'number' => DB::val('SELECT number FROM invoices WHERE id = ?', [$id])]);

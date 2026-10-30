@@ -2,6 +2,15 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 2.1.0 – 2026-10-30
+
+### Neu
+- **Bild pro Position:** Im Offerten-Editor lässt sich bei jeder Position ein Bild hochladen (Klick auf das Bildfeld neben dem Titel, «×» entfernt es). Das Bild wird automatisch verkleinert und als JPEG ohne Metadaten gespeichert.
+- Das Bild erscheint als Vorschau in der Offerte (Desktop und Mobil, Klick vergrössert), im Auftrag, in der Rechnung und im PDF. Es wird beim Duplizieren, in Rechnungen, in Positionsvorlagen («Als Vorlage speichern») und im Kundendaten-Export übernommen; die API liefert `image_url`.
+
+### Hinweis
+- Schema-Version 15 (Spalte `image` bei Positionen und Vorlagen). Nicht mehr verwendete Bilder werden vom Cron nach 2 Tagen gelöscht.
+
 ## 2.0.0 – 2026-10-29
 
 ### Hinweis

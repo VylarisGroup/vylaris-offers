@@ -397,11 +397,15 @@ final class PdfService
             if ($multiTax) {
                 $sub[] = $it['tax_label'] ?: ('Steuer ' . rate($it['tax_rate']));
             }
+            $imgFile = ItemImage::exists($it['image'] ?? null) ? ItemImage::path((string) $it['image']) : null;
+            $imgBox = 17.0;
+            $off = $imgFile ? $imgBox + 3 : 0.0;
+            $tw = $cols[1] - 2 - $off;
             $pdf->SetFont('Helvetica', 'B', 9.5);
-            $hTitle = $pdf->lines(self::t($it['title']), $cols[1] - 2) * 4.8;
+            $hTitle = $pdf->lines(self::t($it['title']), $tw) * 4.8;
             $pdf->SetFont('Helvetica', '', 8.5);
-            $hSub = $sub ? $pdf->lines(self::t(implode("\n", $sub)), $cols[1] - 2) * 4.1 : 0;
-            $h = $hTitle + $hSub + 3;
+            $hSub = $sub ? $pdf->lines(self::t(implode("\n", $sub)), $tw) * 4.1 : 0;
+            $h = max($hTitle + $hSub, $imgFile ? $imgBox : 0) + 3;
             if ($pdf->GetY() + $h > 277 - 6) {
                 $pdf->AddPage();
                 $head();
@@ -411,15 +415,24 @@ final class PdfService
             $pdf->SetFont('Helvetica', '', 8.5);
             $pdf->SetXY(self::$margin, $y);
             $pdf->Cell($cols[0], 4.8, (string) $it['position'], 0, 0);
-            $pdf->SetXY(self::$margin + $cols[0], $y);
+            if ($imgFile && ($sz = @getimagesize($imgFile))) {
+                $ratio = $sz[0] / max(1, $sz[1]);
+                $iw = $ratio >= 1 ? $imgBox : $imgBox * $ratio;
+                $ih = $ratio >= 1 ? $imgBox / $ratio : $imgBox;
+                $pdf->Image($imgFile, self::$margin + $cols[0], $y, $iw, $ih, 'JPG');
+            } else {
+                $off = 0.0;
+                $tw = $cols[1] - 2;
+            }
+            $pdf->SetXY(self::$margin + $cols[0] + $off, $y);
             $pdf->SetFont('Helvetica', 'B', 9.5);
             $pdf->SetTextColor(15, 23, 42);
-            $pdf->MultiCell($cols[1] - 2, 4.8, self::t($it['title']));
+            $pdf->MultiCell($tw, 4.8, self::t($it['title']));
             if ($sub) {
-                $pdf->SetX(self::$margin + $cols[0]);
+                $pdf->SetX(self::$margin + $cols[0] + $off);
                 $pdf->SetFont('Helvetica', '', 8.5);
                 $pdf->SetTextColor(100, 110, 125);
-                $pdf->MultiCell($cols[1] - 2, 4.1, self::t(implode("\n", $sub)));
+                $pdf->MultiCell($tw, 4.1, self::t(implode("\n", $sub)));
             }
             $x = self::$margin + $cols[0] + $cols[1];
             $pdf->SetFont('Helvetica', '', 9);

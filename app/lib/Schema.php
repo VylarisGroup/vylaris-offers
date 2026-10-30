@@ -6,7 +6,7 @@ declare(strict_types=1);
 
 final class Schema
 {
-    public const VERSION = 14;
+    public const VERSION = 15;
 
     public static function statements(): array
     {
@@ -694,6 +694,9 @@ final class Schema
         $add('offers', 'template_id', 'INT UNSIGNED NULL');
         $add('invoices', 'template_id', 'INT UNSIGNED NULL');
         $add('attachments', 'by_customer', 'TINYINT(1) NOT NULL DEFAULT 0');
+        foreach (['offer_items', 'invoice_items', 'item_templates'] as $imgTable) {
+            $add($imgTable, 'image', 'CHAR(32) NULL');
+        }
         DocTemplate::seed($pdo);
         // Das Lizenzsystem wurde in 1.8.0 entfernt: übrig gebliebene Einstellungen löschen.
         $pdo->exec("DELETE FROM settings WHERE `key` LIKE 'license\\_%'");

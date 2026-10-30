@@ -17,12 +17,14 @@ $editorConfig = [
     'taxes'      => array_map(static fn($t) => ['id' => $t['id'], 'cls' => $t['tax_class'] ?? 'taxable', 'def' => !empty($t['is_default']), 'rate' => $t['rate'], 'display' => $t['display'], 'name' => $t['name']], $taxes),
     'liable'     => TaxService::liable(),
     'shipping'   => array_map(static fn($s) => ['name' => $s['name'], 'cost' => (float) $s['cost']], $shipping),
-    'templates'  => array_map(static fn($t) => ['id' => $t['id'], 'title' => $t['title'], 'description' => $t['description'], 'unit' => $t['unit'], 'unit_price' => (float) $t['unit_price'], 'tax' => $t['tax_template_id'], 'area' => $t['product_area_id'], 'area_name' => $t['area_name']], $templates),
+    'templates'  => array_map(static fn($t) => ['id' => $t['id'], 'title' => $t['title'], 'description' => $t['description'], 'unit' => $t['unit'], 'unit_price' => (float) $t['unit_price'], 'tax' => $t['tax_template_id'], 'area' => $t['product_area_id'], 'area_name' => $t['area_name'], 'image' => $t['image']], $templates),
     'items'      => array_values(is_array($form['items'] ?? null) ? $form['items'] : []),
     'currency'   => Settings::get('currency', 'CHF'),
     'style'      => Settings::get('number_style', 'ch'),
     'round005'   => Settings::get('currency') === 'CHF' && Settings::get('round_005') === '1',
     'quickUrl'   => url('admin/templates/quick'),
+    'imgUpload'  => url('admin/item-images'),
+    'imgBase'    => url('item-img/'),
 ];
 ?>
 <?php if ($errors): ?>

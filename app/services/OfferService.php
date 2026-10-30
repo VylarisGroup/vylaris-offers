@@ -176,6 +176,7 @@ final class OfferService
                 'tax_template_id' => $taxId,
                 'tax_rate'        => $taxRate,
                 'tax_label'       => $taxLabel,
+                'image'           => ItemImage::clean($raw['image'] ?? null),
             ];
         }
         if (!$items) {
@@ -308,6 +309,7 @@ final class OfferService
                     'tax_template_id' => $it['tax_template_id'],
                     'tax_rate'        => $it['tax_rate'],
                     'tax_label'       => $it['tax_label'],
+                    'image'           => $it['image'] ?? null,
                     'line_subtotal'   => $it['line_subtotal'],
                     'line_discount'   => $it['line_discount'],
                     'line_total'      => $it['line_total'],
@@ -336,6 +338,7 @@ final class OfferService
                 'quantity'       => qty($it['quantity']),
                 'unit'           => $it['unit'],
                 'unit_price'     => number_format((float) $it['unit_price'], 2, '.', ''),
+                'image'          => $it['image'] ?? '',
                 'discount_type'  => $it['discount_type'],
                 'discount_value' => (float) $it['discount_value'] ? number_format((float) $it['discount_value'], 2, '.', '') : '',
                 'tax'            => $it['tax_template_id'] && $it['tax_template_id'] != $o['tax_template_id'] ? (string) $it['tax_template_id'] : 'default',

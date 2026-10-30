@@ -22,5 +22,6 @@ fwrite(STDOUT, date('c') . " – $n Abo-Rechnung(en) erzeugt\n");
 $wh = Webhooks::processDue(50);
 fwrite(STDOUT, date('c') . " – $wh Webhook-Zustellung(en) verarbeitet\n");
 $ret = Retention::run();
+try { ItemImage::cleanup(); } catch (Throwable $e) { ErrorHandler::log($e); }
 Settings::set(['retention_last_run' => (string) time()]);
 fwrite(STDOUT, date('c') . ' – Aufbewahrung: ' . json_encode(array_filter($ret)) . "\n");

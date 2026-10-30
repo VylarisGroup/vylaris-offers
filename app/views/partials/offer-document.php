@@ -105,8 +105,15 @@ $companyLines = array_filter([
         <tr>
           <td class="align-top text-slate-400 tabular"><?= (int) $it['position'] ?></td>
           <td class="align-top">
-            <p class="font-medium text-slate-900"><?= e($it['title']) ?></p>
-            <?php if ($it['description']): ?><p class="mt-0.5 max-w-xl text-[13px] leading-relaxed text-slate-500"><?= nl($it['description']) ?></p><?php endif; ?>
+            <div class="flex items-start gap-3.5">
+              <?php if ($imgUrl = ItemImage::url($it['image'] ?? null)): ?>
+                <a href="<?= e($imgUrl) ?>" target="_blank" rel="noopener" class="block size-20 shrink-0 overflow-hidden rounded-xl bg-slate-50 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md" aria-label="Bild vergrössern"><img src="<?= e($imgUrl) ?>" alt="<?= e($it['title']) ?>" loading="lazy" class="size-full object-cover"></a>
+              <?php endif; ?>
+              <div class="min-w-0">
+                <p class="font-medium text-slate-900"><?= e($it['title']) ?></p>
+                <?php if ($it['description']): ?><p class="mt-0.5 max-w-xl text-[13px] leading-relaxed text-slate-500"><?= nl($it['description']) ?></p><?php endif; ?>
+              </div>
+            </div>
           </td>
           <td class="whitespace-nowrap text-right align-top tabular"><?= qty($it['quantity']) ?> <?= e($it['unit']) ?></td>
           <td class="whitespace-nowrap text-right align-top tabular"><?= money($it['unit_price'], $cur, false) ?></td>
@@ -125,6 +132,9 @@ $companyLines = array_filter([
   <ul class="divide-y divide-slate-100 border-y border-slate-100 sm:hidden">
     <?php foreach ($offer['items'] as $it): ?>
       <li class="px-5 py-4">
+        <?php if ($imgUrl = ItemImage::url($it['image'] ?? null)): ?>
+          <a href="<?= e($imgUrl) ?>" target="_blank" rel="noopener" class="mb-3 block overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200" aria-label="Bild vergrössern"><img src="<?= e($imgUrl) ?>" alt="<?= e($it['title']) ?>" loading="lazy" class="max-h-56 w-full object-cover"></a>
+        <?php endif; ?>
         <div class="flex justify-between gap-3">
           <p class="font-medium text-slate-900"><span class="mr-1 text-slate-400"><?= (int) $it['position'] ?>.</span><?= e($it['title']) ?></p>
           <p class="whitespace-nowrap font-semibold text-slate-900 tabular"><?= money($it['line_total'], $cur, false) ?></p>

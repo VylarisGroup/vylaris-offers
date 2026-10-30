@@ -20,6 +20,7 @@ $r = new Router();
 
 /* ------------------------------------------------------------ Öffentlich */
 $r->get('/', [SiteController::class, 'home']);
+$r->get('/item-img/{name}', [ItemImageController::class, 'show']);
 $r->get('/site/img/{name}', [SiteController::class, 'image']);
 $r->get('/o/{id}', [PublicOfferController::class, 'show']);
 $r->post('/o/{id}/accept', [PublicOfferController::class, 'accept']);
@@ -180,6 +181,7 @@ $r->get('/admin/areas', [CatalogController::class, 'areas']);
 $r->post('/admin/areas', [CatalogController::class, 'saveArea']);
 $r->post('/admin/areas/{id}/delete', [CatalogController::class, 'deleteArea']);
 
+$r->post('/admin/item-images', [ItemImageController::class, 'upload']);
 $r->get('/admin/templates', [CatalogController::class, 'templates']);
 $r->post('/admin/templates', [CatalogController::class, 'saveTemplate']);
 $r->post('/admin/templates/quick', [CatalogController::class, 'quickTemplate']);

@@ -260,6 +260,8 @@ Scroll-Einblendungen (IntersectionObserver), Toasts, Dialoge (Esc, Hintergrundkl
 ### `assets/js/offer-editor.js`
 Dynamische Positionen (hinzufügen, löschen, Vorlagen einfügen), **Live-Berechnung** (Netto, Rabatte, MWST, Total – identische Logik wie `app/lib/Calc.php`), Steuervorschlag anhand der Kundenadresse. Entscheid: *Massgebend ist immer die serverseitige Berechnung* beim Speichern – das JavaScript ist nur Vorschau.
 
+**Positionsbilder:** Pro Zeile ein 44-px-Bildfeld neben dem Titel (`[data-img]`: Platzhalter-Icon `bx-image-add`, Vorschau mit `object-cover`, kleines «×» oben rechts zum Entfernen). Der Upload läuft asynchron (`POST /admin/item-images`, CSRF-Header/-Feld) und liefert einen 32-stelligen Namen, der als `items[ID][image]` mitgesendet wird. In Dokumenten: 80-px-Vorschau mit `rounded-xl` und `ring-slate-200` links neben dem Titel (Desktop), volle Breite (max. 14 rem Höhe) über dem Titel (Mobil); im PDF 17 mm Box links in der Bezeichnungsspalte.
+
 ### `assets/js/website-builder.js`
 Formularbasierter Editor für die Startseite: Blöcke hinzufügen/sortieren/duplizieren/ausblenden, Entwurf automatisch speichern, Live-Vorschau in einem `iframe` (Scrollposition bleibt beim Neuladen), Geräteumschalter (Desktop 100 % / Smartphone 390 px).
 

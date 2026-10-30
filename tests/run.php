@@ -256,5 +256,28 @@ foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(APP_DIR . 
 }
 $eq('Keine Verweise auf das Lizenzsystem im Code', $refs, 0);
 
+// Positionsbilder (ab 2.1.0)
+$eq('ItemImage: gültiger Name', ItemImage::valid(str_repeat('a1', 16)), true);
+$eq('ItemImage: Pfad-Trick abgelehnt', ItemImage::valid('../../etc/passwd'), false);
+$eq('ItemImage: Grossbuchstaben abgelehnt', ItemImage::valid(str_repeat('A', 32)), false);
+$eq('ItemImage: unbekannt → null', ItemImage::clean(str_repeat('0', 32)), null);
+$eq('Schema ≥ 15', Schema::VERSION >= 15, true);
+$tmp = sys_get_temp_dir() . '/ti_' . bin2hex(random_bytes(4)) . '.png';
+$im = imagecreatetruecolor(2000, 500);
+imagepng($im, $tmp);
+try {
+    $n = ItemImage::storeFile($tmp);
+    $sz = getimagesize(ItemImage::path($n));
+    $eq('ItemImage: skaliert auf max. 900 px', $sz[0], 900);
+    $eq('ItemImage: als JPEG gespeichert', $sz[2], IMAGETYPE_JPEG);
+    @unlink(ItemImage::path($n));
+} catch (Throwable $e) {
+    $eq('ItemImage: Speichern', $e->getMessage(), 'ok');
+}
+file_put_contents($tmp, '<?php echo 1;');
+try { ItemImage::storeFile($tmp); $eq('ItemImage: Nicht-Bild abgelehnt', 'angenommen', 'abgelehnt'); }
+catch (RuntimeException $e) { $eq('ItemImage: Nicht-Bild abgelehnt', true, true); }
+@unlink($tmp);
+
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

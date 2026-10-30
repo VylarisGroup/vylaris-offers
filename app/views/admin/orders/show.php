@@ -111,7 +111,7 @@ $physical = $order['area_type'] === 'physical';
         <thead><tr><th>Pos.</th><th>Bezeichnung</th><th class="text-right">Menge</th><th class="text-right">Total</th></tr></thead>
         <tbody>
           <?php foreach ($offer['items'] as $it): ?>
-            <tr><td class="text-slate-400"><?= (int) $it['position'] ?></td><td><p class="font-medium text-slate-900"><?= e($it['title']) ?></p><?php if ($it['description']): ?><p class="text-xs text-slate-500"><?= nl($it['description']) ?></p><?php endif; ?></td>
+            <tr><td class="text-slate-400"><?= (int) $it['position'] ?></td><td><div class="flex items-start gap-3"><?php if ($imgUrl = ItemImage::url($it['image'] ?? null)): ?><a href="<?= e($imgUrl) ?>" target="_blank" rel="noopener" class="block size-12 shrink-0 overflow-hidden rounded-lg ring-1 ring-slate-200"><img src="<?= e($imgUrl) ?>" alt="" loading="lazy" class="size-full object-cover"></a><?php endif; ?><div><p class="font-medium text-slate-900"><?= e($it['title']) ?></p><?php if ($it['description']): ?><p class="text-xs text-slate-500"><?= nl($it['description']) ?></p><?php endif; ?></div></div></td>
               <td class="whitespace-nowrap text-right tabular"><?= qty($it['quantity']) ?> <?= e($it['unit']) ?></td><td class="whitespace-nowrap text-right font-medium tabular"><?= money($it['line_total'], $order['currency']) ?></td></tr>
           <?php endforeach; ?>
         </tbody>

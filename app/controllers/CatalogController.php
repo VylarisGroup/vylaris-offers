@@ -85,6 +85,7 @@ final class CatalogController
             'unit_price'      => Calc::r2(parse_number(input('unit_price', 0))),
             'product_area_id' => $area && DB::val('SELECT 1 FROM product_areas WHERE id = ?', [$area]) ? $area : null,
             'tax_template_id' => $tax && TaxService::find($tax) ? $tax : null,
+            'image'           => ItemImage::clean($_POST['image'] ?? null),
         ];
     }
 

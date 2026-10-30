@@ -13,12 +13,12 @@ include APP_DIR . '/views/partials/page-header.php';
     <tbody>
     <?php foreach ($templates as $t): ?>
       <tr class="<?= $t['active'] ? '' : 'opacity-60' ?>">
-        <td><p class="font-medium text-slate-900"><?= e($t['title']) ?><?= $t['active'] ? '' : ' <span class="badge badge-slate">inaktiv</span>' ?></p><?php if ($t['description']): ?><p class="max-w-md truncate text-xs text-slate-500"><?= e($t['description']) ?></p><?php endif; ?></td>
+        <td><div class="flex items-center gap-3"><?php if ($imgUrl = ItemImage::url($t['image'] ?? null)): ?><img src="<?= e($imgUrl) ?>" alt="" loading="lazy" class="size-10 shrink-0 rounded-lg object-cover ring-1 ring-slate-200"><?php endif; ?><div><p class="font-medium text-slate-900"><?= e($t['title']) ?><?= $t['active'] ? '' : ' <span class="badge badge-slate">inaktiv</span>' ?></p><?php if ($t['description']): ?><p class="max-w-md truncate text-xs text-slate-500"><?= e($t['description']) ?></p><?php endif; ?></div></div></td>
         <td class="hidden md:table-cell"><?= $t['area_name'] ? '<span class="badge badge-slate"><i class="bx ' . e($t['area_icon']) . '"></i>' . e($t['area_name']) . '</span>' : '<span class="text-slate-400">alle</span>' ?></td>
         <td class="hidden sm:table-cell text-xs text-slate-500"><?= $t['tax_label'] !== null ? e(TaxService::display(['label' => $t['tax_label'], 'rate' => $t['tax_rate'], 'country' => $t['tax_country']])) : 'Standard' ?></td>
         <td class="whitespace-nowrap text-right font-medium tabular"><?= money($t['unit_price']) ?> <span class="text-xs font-normal text-slate-400">/ <?= e($t['unit']) ?></span></td>
         <td><div class="flex justify-end gap-1">
-          <button type="button" class="btn btn-ghost btn-icon" data-modal-open="modal-tpl" data-modal-title="Vorlage bearbeiten" data-fill="<?= json_attr(['id' => $t['id'], 'title' => $t['title'], 'description' => $t['description'], 'unit' => $t['unit'], 'unit_price' => number_format((float) $t['unit_price'], 2, '.', ''), 'product_area_id' => $t['product_area_id'], 'tax_template_id' => $t['tax_template_id'], 'active' => $t['active']]) ?>" data-tip="Bearbeiten" aria-label="Bearbeiten"><i class="bx bx-edit text-lg"></i></button>
+          <button type="button" class="btn btn-ghost btn-icon" data-modal-open="modal-tpl" data-modal-title="Vorlage bearbeiten" data-fill="<?= json_attr(['id' => $t['id'], 'title' => $t['title'], 'description' => $t['description'], 'unit' => $t['unit'], 'unit_price' => number_format((float) $t['unit_price'], 2, '.', ''), 'product_area_id' => $t['product_area_id'], 'tax_template_id' => $t['tax_template_id'], 'image' => $t['image'], 'active' => $t['active']]) ?>" data-tip="Bearbeiten" aria-label="Bearbeiten"><i class="bx bx-edit text-lg"></i></button>
           <form method="post" action="<?= e(url('admin/templates/' . $t['id'] . '/delete')) ?>" data-confirm="Vorlage „<?= e($t['title']) ?>“ löschen? Bestehende Offerten bleiben unverändert." data-confirm-label="Löschen"><?= csrf_field() ?><button class="btn btn-ghost btn-icon text-slate-400 hover:text-rose-600" data-tip="Löschen" aria-label="Löschen"><i class="bx bx-trash text-lg"></i></button></form>
         </div></td>
       </tr>
@@ -31,7 +31,7 @@ include APP_DIR . '/views/partials/page-header.php';
 <div class="modal" id="modal-tpl" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal-backdrop" data-modal-close></div>
   <form method="post" action="<?= e(url('admin/templates')) ?>" class="modal-panel max-w-lg" data-wizard="auto" data-defaults='{"unit":"Stk.","active":1}'><?= csrf_field() ?>
-    <input type="hidden" name="id">
+    <input type="hidden" name="id"><input type="hidden" name="image">
     <div class="flex items-center justify-between border-b border-slate-100 p-5 sm:px-6"><h3 class="text-base font-semibold text-slate-900" data-modal-heading>Vorlage</h3><button type="button" class="btn btn-ghost btn-icon" data-modal-close aria-label="Schliessen"><i class="bx bx-x text-2xl"></i></button></div>
     <div class="grid gap-4 p-5 sm:grid-cols-2 sm:p-6" data-wizard-fields>
       <div class="sm:col-span-2"><label class="label">Titel <span class="text-rose-500">*</span></label><input class="input" name="title" required maxlength="190"></div>
