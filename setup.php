@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 define('APP_ROOT', __DIR__);
 define('APP_DIR', __DIR__ . '/app');
-define('APP_VERSION', '2.2.2');
+define('APP_VERSION', '2.2.3');
 
 $configFile = APP_DIR . '/config.php';
 $lockFile = APP_ROOT . '/storage/install.lock';

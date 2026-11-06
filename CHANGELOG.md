@@ -2,6 +2,11 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 2.2.3 – 2026-11-06
+
+### Verbessert
+- **«Position aus Link»:** Antwortet eine Seite gar nicht auf automatische Abrufe (Zeitüberschreitung, abgebrochene Verbindung, z. B. Alltron), erscheint die Meldung «blockiert automatische Abrufe oder antwortet nicht» und das Feld zum Einfügen des Seitentexts.
+
 ## 2.2.2 – 2026-11-06
 
 ### Behoben

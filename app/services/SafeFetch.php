@@ -66,6 +66,9 @@ final class SafeFetch
                 $url = self::absolute($headers['location'], $url);
                 continue;
             }
+            if (in_array($cno, [28, 92, 16, 52, 56], true) && $body === '') {
+                return [null, null, 'Die Seite blockiert automatische Abrufe oder antwortet nicht (' . $cerr . ').'];
+            }
             if ($cerr) {
                 return [null, null, 'Die Seite ist nicht erreichbar (' . $cerr . ').'];
             }
