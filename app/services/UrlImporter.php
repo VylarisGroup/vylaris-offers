@@ -16,7 +16,7 @@ final class UrlImporter
      * @return array{title:string,description:string,unit:string,unit_price:string,image:string,source:string,warnings:string[]}
      * @throws RuntimeException
      */
-    public static function import(string $url): array
+    public static function import(string $url, ?string $pastedText = null): array
     {
         if (!AiService::enabled()) {
             throw new RuntimeException('Die KI-Anbindung ist nicht aktiviert (Verwaltung → KI-Assistent).');
@@ -25,14 +25,21 @@ final class UrlImporter
         if (!preg_match('#^https?://#i', $url)) {
             $url = 'https://' . $url;
         }
-        [$html, $type, $err] = SafeFetch::get($url);
-        if ($err) {
-            throw new RuntimeException($err);
+        $pastedText = $pastedText !== null ? trim($pastedText) : '';
+        if ($pastedText !== '') {
+            // Fallback: Der Betreiber hat den Seitentext selbst eingefügt (Seite blockiert Abrufe).
+            $pastedText = (string) preg_replace('/\s+/u', ' ', $pastedText);
+            $page = ['title' => '', 'meta' => '', 'text' => mb_substr($pastedText, 0, self::TEXT_LIMIT), 'ld' => [], 'images' => [], 'price' => null, 'currency' => null];
+        } else {
+            [$html, $type, $err] = SafeFetch::get($url);
+            if ($err) {
+                throw new RuntimeException($err);
+            }
+            if ($html === null || ($type !== '' && !str_contains((string) $type, 'html') && !str_contains((string) $type, 'xml'))) {
+                throw new RuntimeException('Unter dieser Adresse liegt keine Webseite.');
+            }
+            $page = self::extract($html, $url);
         }
-        if ($html === null || ($type !== '' && !str_contains((string) $type, 'html') && !str_contains((string) $type, 'xml'))) {
-            throw new RuntimeException('Unter dieser Adresse liegt keine Webseite.');
-        }
-        $page = self::extract($html, $url);
         if ($page['text'] === '' && !$page['ld'] && !$page['meta']) {
             throw new RuntimeException('Auf der Seite wurden keine lesbaren Inhalte gefunden (evtl. wird sie erst per JavaScript geladen).');
         }

@@ -171,12 +171,14 @@
   /* ------------------------------------------------ KI: Position aus Link */
   const linkModal = document.getElementById('modal-link');
   const importFromLink = async (url, opts = {}) => {
+    const pasted = opts.text || '';
     const body = new FormData();
     body.append('_csrf', document.querySelector('meta[name="csrf-token"]').content);
     body.append('url', url);
+    if (pasted) body.append('text', pasted);
     const res = await fetch(cfg.aiImportUrl, { method: 'POST', body, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
     const json = await res.json().catch(() => ({ ok: false, error: 'Unerwartete Antwort des Servers.' }));
-    if (!json.ok) throw new Error(json.error || 'Der Import ist fehlgeschlagen.');
+    if (!json.ok) { const er = new Error(json.error || 'Der Import ist fehlgeschlagen.'); er.blocked = !!json.blocked; throw er; }
     const it = json.item;
     const data = { title: it.title, description: it.description, quantity: '1', unit: it.unit, unit_price: it.unit_price, image: it.image || '', tax: 'default' };
     let row = opts.row;
@@ -198,6 +200,7 @@
     return row;
   };
   if (linkModal) {
+    const paste = $('[data-link-paste]', linkModal), pasteText = $('[data-link-text]', linkModal);
     const input = $('[data-link-url]', linkModal), err = $('[data-link-error]', linkModal), go = $('[data-link-go]', linkModal);
     const run = async () => {
       const url = input.value.trim();
@@ -205,10 +208,10 @@
       err.classList.add('hidden'); go.disabled = true;
       const label = go.innerHTML; go.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i>KI liest die Seite …';
       try {
-        await importFromLink(url);
-        input.value = '';
+        await importFromLink(url, { text: pasteText.value.trim() });
+        input.value = ''; pasteText.value = ''; paste.classList.add('hidden');
         window.appModal.close(linkModal);
-      } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+      } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); if (e.blocked) paste.classList.remove('hidden'); }
       go.disabled = false; go.innerHTML = label;
     };
     go.addEventListener('click', run);

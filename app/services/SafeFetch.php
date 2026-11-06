@@ -62,6 +62,9 @@ final class SafeFetch
             if ($cerr) {
                 return [null, null, 'Die Seite ist nicht erreichbar (' . $cerr . ').'];
             }
+            if (in_array($code, [401, 403, 429, 503], true)) {
+                return [null, null, 'Die Seite blockiert automatische Abrufe (HTTP ' . $code . ').'];
+            }
             if ($code >= 400 || $code === 0) {
                 return [null, null, 'Die Seite antwortet mit HTTP ' . $code . '.'];
             }

@@ -293,6 +293,11 @@ $editorConfig = [
       <input class="input" id="link-url" type="url" inputmode="url" placeholder="https://www.beispiel.ch/produkt" data-link-url>
       <p class="hint">Die KI liest die Seite und übernimmt Titel, Beschreibung, Preis und Bild. Prüfen Sie das Ergebnis vor dem Speichern.</p>
       <p class="hidden text-sm text-rose-600" data-link-error></p>
+      <div class="hidden space-y-1.5 rounded-xl bg-amber-50 p-3 ring-1 ring-amber-200/70" data-link-paste>
+        <label class="label !mb-0" for="link-text">Seitentext einfügen</label>
+        <textarea class="input text-[13px]" id="link-text" rows="5" maxlength="30000" placeholder="Öffnen Sie die Seite im Browser, markieren Sie alles (Strg+A), kopieren (Strg+C) und fügen Sie es hier ein." data-link-text></textarea>
+        <p class="hint">Manche Shops sperren automatische Abrufe. Mit dem eingefügten Text erstellt die KI die Position trotzdem; das Bild laden Sie danach selbst hoch.</p>
+      </div>
     </div>
     <div class="flex justify-end gap-2 rounded-b-2xl bg-slate-50 px-6 py-3">
       <button type="button" class="btn btn-ghost" data-modal-close>Abbrechen</button>

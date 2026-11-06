@@ -2,6 +2,14 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 2.2.1 – 2026-11-06
+
+### Verbessert
+- **Gesperrte Shops:** Blockiert eine Seite automatische Abrufe (HTTP 403/429, z. B. Galaxus), erscheint eine klare Meldung und im Fenster «Aus Link» ein Feld, in das der kopierte Seitentext eingefügt werden kann. Die KI erstellt daraus die Position; das Bild laden Sie selbst hoch.
+
+### Hinweis
+- Der Bot-Schutz solcher Seiten wird bewusst nicht umgangen: Abrufe erfolgen mit ehrlicher Kennung.
+
 ## 2.2.0 – 2026-11-06
 
 ### Neu

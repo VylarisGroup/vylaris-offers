@@ -72,9 +72,9 @@ final class AiController
             json_response(['ok' => false, 'error' => 'Bitte einen Link angeben.'], 422);
         }
         try {
-            $item = UrlImporter::import($url);
+            $item = UrlImporter::import($url, input_str('text', 30000));
         } catch (RuntimeException $e) {
-            json_response(['ok' => false, 'error' => $e->getMessage()], 422);
+            json_response(['ok' => false, 'error' => $e->getMessage(), 'blocked' => str_contains($e->getMessage(), 'blockiert') || str_contains($e->getMessage(), 'keine lesbaren')], 422);
         } catch (Throwable $e) {
             ErrorHandler::log($e);
             json_response(['ok' => false, 'error' => 'Der Import ist fehlgeschlagen.'], 500);
