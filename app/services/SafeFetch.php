@@ -11,7 +11,8 @@ final class SafeFetch
     /** @return array{0: string|null, 1: string|null, 2: string|null} [Inhalt, Content-Type, Fehlermeldung] */
     public static function get(string $url, int $maxBytes = 2_500_000, int $timeout = 15, string $accept = 'text/html,application/xhtml+xml,*/*;q=0.8'): array
     {
-        for ($hop = 0; $hop < 5; $hop++) {
+        $http11 = false;
+        for ($hop = 0; $hop < 6; $hop++) {
             $err = self::validate($url, $ip);
             if ($err) {
                 return [null, null, $err];
@@ -30,6 +31,7 @@ final class SafeFetch
                 CURLOPT_PROTOCOLS      => CURLPROTO_HTTP | CURLPROTO_HTTPS,
                 CURLOPT_RESOLVE        => [$p['host'] . ':' . $port . ':' . $ip],
                 CURLOPT_ENCODING       => '',
+                CURLOPT_HTTP_VERSION   => $http11 ? CURL_HTTP_VERSION_1_1 : CURL_HTTP_VERSION_NONE,
                 CURLOPT_HTTPHEADER     => ['Accept: ' . $accept, 'Accept-Language: de,en;q=0.8'],
                 CURLOPT_USERAGENT      => 'Mozilla/5.0 (compatible; ' . Brand::userAgent() . ')',
                 CURLOPT_HEADERFUNCTION => static function ($ch, string $h) use (&$headers): int {
@@ -50,8 +52,13 @@ final class SafeFetch
             ]);
             curl_exec($ch);
             $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-            $cerr = curl_errno($ch) ? curl_error($ch) : null;
+            $cno = curl_errno($ch);
+            $cerr = $cno ? curl_error($ch) : null;
             curl_close($ch);
+            if (in_array($cno, [16, 92], true) && !$http11) {   // HTTP/2-Fehler: einmal mit HTTP/1.1 wiederholen
+                $http11 = true;
+                continue;
+            }
             if ($tooBig) {
                 return [null, null, 'Die Datei ist zu gross.'];
             }

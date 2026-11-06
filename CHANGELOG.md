@@ -2,6 +2,11 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 2.2.2 – 2026-11-06
+
+### Behoben
+- **«Position aus Link»:** Bricht ein Shop die HTTP/2-Verbindung ab (Fehler «HTTP/2 stream 1 was not closed cleanly», z. B. Alltron), wird der Abruf automatisch einmal mit HTTP/1.1 wiederholt.
+
 ## 2.2.1 – 2026-11-06
 
 ### Verbessert
