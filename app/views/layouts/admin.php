@@ -40,6 +40,7 @@ if ($isAdmin) {
         ['admin/users', 'Benutzer', 'bx-user-check', null],
         ['admin/website', 'Webseite', 'bx-layout', null],
         ['admin/integrations', 'Integrationen', 'bx-plug', null],
+        ['admin/ai', 'KI-Assistent', 'bx-bot', null],
     ]];
     $groups[] = ['system', 'System', 'bx-cog', false, [
         ['admin/settings', 'Einstellungen', 'bx-slider-alt', null],

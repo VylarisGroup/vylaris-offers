@@ -168,6 +168,64 @@
     requestAnimationFrame(fit);
   };
 
+  /* ------------------------------------------------ KI: Position aus Link */
+  const linkModal = document.getElementById('modal-link');
+  const importFromLink = async (url, opts = {}) => {
+    const body = new FormData();
+    body.append('_csrf', document.querySelector('meta[name="csrf-token"]').content);
+    body.append('url', url);
+    const res = await fetch(cfg.aiImportUrl, { method: 'POST', body, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
+    const json = await res.json().catch(() => ({ ok: false, error: 'Unerwartete Antwort des Servers.' }));
+    if (!json.ok) throw new Error(json.error || 'Der Import ist fehlgeschlagen.');
+    const it = json.item;
+    const data = { title: it.title, description: it.description, quantity: '1', unit: it.unit, unit_price: it.unit_price, image: it.image || '', tax: 'default' };
+    let row = opts.row;
+    if (row) {
+      const set = (f, v) => { const el = $(`[name$="[${f}]"]`, row); if (el) el.value = v; };
+      set('title', data.title); set('description', data.description); set('unit', data.unit); set('unit_price', data.unit_price);
+      const w = $('[data-img]', row); if (w) setImg(w, data.image);
+      autogrow($('[data-autogrow]', row)); recalc();
+    } else {
+      const rows = $$('[data-row]', list);
+      const empty = rows.find((r) => { const d = rowData(r); return !d.title && !d.unit_price; });
+      row = addRow(data, empty || null);
+      if (empty) empty.remove();
+      renumber(); recalc();
+    }
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.toast(`„${it.title}“ übernommen.`, 'success');
+    (it.warnings || []).slice(0, 2).forEach((w) => window.toast(w, 'info'));
+    return row;
+  };
+  if (linkModal) {
+    const input = $('[data-link-url]', linkModal), err = $('[data-link-error]', linkModal), go = $('[data-link-go]', linkModal);
+    const run = async () => {
+      const url = input.value.trim();
+      if (!url) { input.focus(); return; }
+      err.classList.add('hidden'); go.disabled = true;
+      const label = go.innerHTML; go.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i>KI liest die Seite …';
+      try {
+        await importFromLink(url);
+        input.value = '';
+        window.appModal.close(linkModal);
+      } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+      go.disabled = false; go.innerHTML = label;
+    };
+    go.addEventListener('click', run);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+    document.querySelectorAll('[data-modal-open="modal-link"]').forEach((b) => b.addEventListener('click', () => { err.classList.add('hidden'); setTimeout(() => input.focus(), 50); }));
+    // Link direkt ins Titelfeld einfügen → Position wird automatisch befüllt
+    list.addEventListener('change', async (e) => {
+      if (!e.target.matches('[name$="[title]"]')) return;
+      const v = e.target.value.trim();
+      if (!/^https?:\/\/\S+$/i.test(v)) return;
+      const row = e.target.closest('[data-row]');
+      e.target.disabled = true; e.target.value = 'KI liest die Seite …';
+      try { await importFromLink(v, { row }); } catch (er) { e.target.value = v; window.toast(er.message, 'error'); }
+      e.target.disabled = false;
+    });
+  }
+
   /* ------------------------------------------------ Berechnung */
   const resolveRate = (sel) => {
     const t = sel && sel !== 'default' ? taxById(sel) : taxById($('[data-default-tax]', form).value);

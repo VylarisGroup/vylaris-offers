@@ -279,5 +279,23 @@ try { ItemImage::storeFile($tmp); $eq('ItemImage: Nicht-Bild abgelehnt', 'angeno
 catch (RuntimeException $e) { $eq('ItemImage: Nicht-Bild abgelehnt', true, true); }
 @unlink($tmp);
 
+// KI-Assistent / Position aus Link (ab 2.2.0)
+$eq('SafeFetch: Loopback abgelehnt', SafeFetch::validate('http://127.0.0.1/x') !== null, true);
+$eq('SafeFetch: privates Netz abgelehnt', SafeFetch::validate('http://10.0.0.5/') !== null, true);
+$eq('SafeFetch: file:// abgelehnt', SafeFetch::validate('file:///etc/passwd') !== null, true);
+$eq('SafeFetch: Zugangsdaten in URL abgelehnt', SafeFetch::validate('https://user:pw@example.com/') !== null, true);
+$eq('SafeFetch: relative URL', SafeFetch::absolute('/img/a.png', 'https://shop.ch/p/x'), 'https://shop.ch/img/a.png');
+$eq('SafeFetch: relative URL (Ordner)', SafeFetch::absolute('a.png', 'https://shop.ch/p/x'), 'https://shop.ch/p/a.png');
+$eq('AiService: JSON mit Codezaun', AiService::parseJson("```json\n{\"title\":\"A\"}\n```")['title'] ?? null, 'A');
+$eq('AiService: JSON mit Text drumherum', AiService::parseJson('Hier: {"title":"B"} Ende')['title'] ?? null, 'B');
+$eq('AiService: kein JSON', AiService::parseJson('nichts'), null);
+$pg = UrlImporter::extract('<html><head><title>T</title><meta property="og:image" content="/i/a.jpg"><script type="application/ld+json">{"@type":"Product","name":"N","offers":{"price":"12.50","priceCurrency":"CHF"}}</script></head><body><nav>Menü</nav><main><p>Inhalt</p><img src="/i/logo.png"><img src="/i/b.jpg" width="500"></main><script>alert(1)</script></body></html>', 'https://shop.ch/p');
+$eq('UrlImporter: Preis aus JSON-LD', $pg['price'], 12.5);
+$eq('UrlImporter: Währung', $pg['currency'], 'CHF');
+$eq('UrlImporter: og:image zuerst', $pg['images'][0] ?? null, 'https://shop.ch/i/a.jpg');
+$eq('UrlImporter: Logo ausgefiltert', in_array('https://shop.ch/i/logo.png', $pg['images'], true), false);
+$eq('UrlImporter: Text ohne Navigation/Skript', $pg['text'], 'Inhalt');
+$eq('Einstellung ai_api_key verschlüsselt', (bool) preg_match('/ENCRYPTED = \\[[^\\]]*ai_api_key/', (string) file_get_contents(APP_DIR . '/lib/Settings.php')), true);
+
 echo "\n$pass bestanden, $fail fehlgeschlagen\n";
 exit($fail ? 1 : 0);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 final class Settings
 {
     private static ?array $cache = null;
-    private const ENCRYPTED = ['sso_client_secret', 'smtp_pass', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret'];
+    private const ENCRYPTED = ['sso_client_secret', 'smtp_pass', 'mollie_api_key', 'stripe_secret_key', 'stripe_webhook_secret', 'ai_api_key'];
 
     public const DEFAULTS = [
         'company_name' => 'Meine Firma',
@@ -85,6 +85,13 @@ final class Settings
         'mollie_api_key' => '',
         'stripe_secret_key' => '',
         'stripe_webhook_secret' => '',
+        'ai_enabled' => '0',
+        'ai_base_url' => '',
+        'ai_api_key' => '',
+        'ai_model' => '',
+        'ai_json_mode' => '1',
+        'ai_timeout' => '60',
+        'ai_hint' => '',
         'health_token' => '',
         'cron_last_run' => '',
         'last_backup_at' => '',

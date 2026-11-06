@@ -19,6 +19,8 @@ final class Audit
         'sso_login'           => 'SSO-Anmeldung',
         'sso_failed'          => 'SSO-Anmeldung abgelehnt',
         'sso_settings'        => 'SSO-Einstellungen',
+        'ai_settings'         => 'KI-Einstellungen',
+        'ai_import'           => 'KI-Import aus Link',
         '2fa_enabled'         => '2FA aktiviert',
         '2fa_disabled'        => '2FA deaktiviert',
         '2fa_reset'           => '2FA zurückgesetzt (Admin)',

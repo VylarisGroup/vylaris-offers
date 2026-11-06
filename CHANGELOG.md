@@ -2,6 +2,16 @@
 
 Format: pro Version ein Abschnitt `## <Version> – <Datum>` mit Unterabschnitten `### Neu`, `### Verbessert`, `### Behoben`, `### Hinweis`. Einträge sind Aufzählungspunkte; `**fett**` und `` `Code` `` sind erlaubt. Die neueste Version steht oben. Der Inhalt wird Mitarbeitenden beim ersten Anmelden nach einem Update angezeigt.
 
+## 2.2.0 – 2026-11-06
+
+### Neu
+- **KI-Assistent:** Unter «Verwaltung → KI-Assistent» (nur Administratoren) lässt sich ein beliebiges OpenAI-kompatibles Gateway anbinden: Adresse, Modellname, API-Schlüssel (verschlüsselt), Zeitlimit, JSON-Modus, zusätzliche Vorgaben und Verbindungstest.
+- **Position aus Link:** Im Offerten-Editor erstellt «Aus Link» (oder ein ins Titelfeld eingefügter Link) eine Position. Die KI liest die Webseite und übernimmt Titel, Beschreibung, Einheit, Preis und das Hauptbild.
+
+### Hinweis
+- Es werden nur öffentliche Webseiten geladen (interne Adressen sind gesperrt). Der Seitentext wird an das konfigurierte Gateway gesendet. Preise bitte prüfen: sie werden nicht umgerechnet.
+- Keine Schema-Änderung; die Einstellungen liegen in der Tabelle `settings`.
+
 ## 2.1.0 – 2026-10-30
 
 ### Neu

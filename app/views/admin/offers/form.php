@@ -24,6 +24,8 @@ $editorConfig = [
     'round005'   => Settings::get('currency') === 'CHF' && Settings::get('round_005') === '1',
     'quickUrl'   => url('admin/templates/quick'),
     'imgUpload'  => url('admin/item-images'),
+    'aiEnabled'  => AiService::enabled(),
+    'aiImportUrl' => url('admin/ai/import-url'),
     'imgBase'    => url('item-img/'),
 ];
 ?>
@@ -87,13 +89,17 @@ $editorConfig = [
     <section class="reveal card" data-step="items" data-step-title="Positionen" data-step-icon="bx-list-ul">
       <div class="card-header">
         <h2 class="card-title"><i class="bx bx-list-ul"></i>Positionen <span class="badge badge-slate" data-item-count>0</span></h2>
-        <button type="button" class="btn btn-secondary btn-sm" data-modal-open="modal-templates"><i class="bx bx-bookmarks"></i>Aus Vorlage</button>
+        <div class="flex gap-2">
+          <?php if (AiService::enabled()): ?><button type="button" class="btn btn-secondary btn-sm" data-modal-open="modal-link"><i class="bx bx-bot"></i>Aus Link</button><?php endif; ?>
+          <button type="button" class="btn btn-secondary btn-sm" data-modal-open="modal-templates"><i class="bx bx-bookmarks"></i>Aus Vorlage</button>
+        </div>
       </div>
       <?= isset($errors['items']) ? '<div class="px-6 pt-4">' . $err('items') . '</div>' : '' ?>
       <div data-items class="divide-y divide-slate-100"></div>
       <div class="flex flex-wrap gap-2 border-t border-slate-100 p-4 sm:px-6">
         <button type="button" class="btn btn-secondary" data-add-item><i class="bx bx-plus"></i>Position hinzufügen</button>
         <button type="button" class="btn btn-ghost" data-modal-open="modal-templates"><i class="bx bx-bookmark-plus"></i>Vorlage einfügen</button>
+        <?php if (AiService::enabled()): ?><button type="button" class="btn btn-ghost" data-modal-open="modal-link"><i class="bx bx-bot"></i>Position aus Link</button><?php endif; ?>
       </div>
     </section>
 
@@ -272,6 +278,29 @@ $editorConfig = [
     </section>
   </div>
 </form>
+
+<?php if (AiService::enabled()): ?>
+<!-- Link-Modal (KI-Import) -->
+<div class="modal" id="modal-link" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="link-title">
+  <div class="modal-backdrop" data-modal-close></div>
+  <div class="modal-panel max-w-lg">
+    <div class="flex items-center justify-between gap-4 border-b border-slate-100 p-5 sm:px-6">
+      <h3 id="link-title" class="text-base font-semibold text-slate-900">Position aus Link erstellen</h3>
+      <button type="button" class="btn btn-ghost btn-icon" data-modal-close aria-label="Schliessen"><i class="bx bx-x text-2xl"></i></button>
+    </div>
+    <div class="space-y-3 p-5 sm:px-6">
+      <label class="label" for="link-url">Adresse der Produkt- oder Leistungsseite</label>
+      <input class="input" id="link-url" type="url" inputmode="url" placeholder="https://www.beispiel.ch/produkt" data-link-url>
+      <p class="hint">Die KI liest die Seite und übernimmt Titel, Beschreibung, Preis und Bild. Prüfen Sie das Ergebnis vor dem Speichern.</p>
+      <p class="hidden text-sm text-rose-600" data-link-error></p>
+    </div>
+    <div class="flex justify-end gap-2 rounded-b-2xl bg-slate-50 px-6 py-3">
+      <button type="button" class="btn btn-ghost" data-modal-close>Abbrechen</button>
+      <button type="button" class="btn btn-primary" data-link-go><i class="bx bx-bot"></i>Position erstellen</button>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
 
 <!-- Vorlagen-Modal -->
 <div class="modal" id="modal-templates" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="tpl-title">
